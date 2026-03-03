@@ -3,52 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOOP 노래 위젯 리모컨</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <title>SOOP 노래 리모컨</title>
+    <script src="https://unpkg.com/papaparse@5.3.2/papaparse.min.js"></script>
     <style>
-        :root { --primary: #007bff; --success: #28a745; --secondary: #6c757d; }
-        body { font-family: 'Pretendard', sans-serif; padding: 20px; background: #f8f9fa; max-width: 600px; margin: 0 auto; }
-        h2 { text-align: center; color: #333; }
-        
-        /* 상단 컨트롤 영역 */
-        .controls { display: flex; gap: 10px; margin-bottom: 20px; position: sticky; top: 0; background: #f8f9fa; padding: 10px 0; }
-        #search { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
-        .btn-refresh { padding: 0 15px; background: var(--secondary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        :root { --bg: #f8f9fa; --card: #ffffff; --primary: #007bff; --gray: #6c757d; }
+        body { font-family: 'Pretendard', sans-serif; background: var(--bg); padding: 15px; max-width: 500px; margin: 0 auto; }
+        h2 { text-align: center; color: #333; margin-bottom: 20px; }
 
-        /* 리스트 영역 */
-        #list { display: flex; flex-direction: column; gap: 10px; }
-        .song-item { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #eee; }
-        .song-info { margin-bottom: 10px; font-weight: bold; font-size: 1.1em; color: #333; }
+        /* 상단 검색 및 새로고침 */
+        .header-controls { display: flex; gap: 8px; position: sticky; top: 10px; z-index: 100; background: var(--bg); padding-bottom: 10px; }
+        #search { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .btn-refresh { width: 50px; background: var(--gray); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 18px; }
+
+        /* 리스트 항목 */
+        #song-list { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+        .song-item { background: var(--card); padding: 16px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #eee; }
+        .song-name { display: block; font-weight: bold; font-size: 1.1rem; color: #222; margin-bottom: 12px; }
         
-        .button-group { display: flex; gap: 8px; }
-        .btn { flex: 1; padding: 8px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; }
+        /* 하단 버튼들 */
+        .btn-group { display: flex; gap: 8px; }
+        .btn { flex: 1; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.2s; }
         .btn-copy { background: #e9ecef; color: #495057; }
         .btn-send { background: var(--primary); color: white; }
-        .btn:hover { opacity: 0.8; }
-        .btn:active { transform: scale(0.98); }
+        .btn:active { transform: scale(0.96); opacity: 0.9; }
     </style>
 </head>
 <body>
 
     <h2>🎤 노래책 리모컨</h2>
 
-    <div class="controls">
+    <div class="header-controls">
         <input type="text" id="search" placeholder="가수 또는 제목 검색...">
-        <button class="btn-refresh" onclick="loadSheet()" title="목록 새로고침">🔄</button>
+        <button class="btn-refresh" onclick="fetchSheetData()">🔄</button>
     </div>
 
-    <div id="list">데이터를 불러오는 중...</div>
+    <div id="song-list">데이터를 불러오는 중...</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // 1. Firebase 설정 (본인의 코드로 반드시 교체하세요!)
+        // [주의] 아래 두 항목은 본인의 파이어베이스 설정에서 직접 복사해서 넣으세요!
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            databaseURL: "YOUR_DATABASE_URL",
-            projectId: "YOUR_PROJECT_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyDD81eW0FEgovKUjM2RwE9S-XHhEz2V2gU", 
+            databaseURL: "https://queenryerye-d8dac-default-rtdb.firebaseio.com/",
+            projectId: "queenryerye-d8dac",
+            appId: "1:217840989435:web:f2391bb48fda1c49f12c5e"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -57,88 +57,78 @@
         const SHEET_ID = '1mbBCeoTB4HhOsiTq4SHRmmLcb756TK238N3WIM-y2Tw';
         const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
 
-        let songData = [];
+        let allSongs = [];
 
-        // 2. 시트 데이터 로드 함수
-        window.loadSheet = async function() {
-            const listDiv = document.getElementById('list');
-            listDiv.innerText = "새로고침 중...";
-            
+        // 데이터 불러오기
+        window.fetchSheetData = async function() {
+            const listEl = document.getElementById('song-list');
+            listEl.innerHTML = "<b>새로고침 중...</b>";
+
             try {
-                const response = await fetch(SHEET_URL);
-                const csvText = await response.text();
-                
-                Papa.parse(csvText, {
+                const res = await fetch(SHEET_URL);
+                const text = await res.text();
+
+                Papa.parse(text, {
                     complete: (results) => {
-                        // 첫 줄(헤더) 제외, 데이터가 있는 행만 필터링
-                        // B열 = row[1], C열 = row[2]
-                        songData = results.data.slice(1)
-                            .filter(row => row[1] && row[2]) 
+                        // B열(row[1]) = 가수, C열(row[2]) = 제목
+                        allSongs = results.data.slice(1)
+                            .filter(row => row[1] && row[2])
                             .map(row => ({
-                                singer: row[1].trim(),
-                                title: row[2].trim()
+                                singer: row[1].replace(/"/g, '').trim(),
+                                title: row[2].replace(/"/g, '').trim()
                             }));
-                        renderList(songData);
+                        displaySongs(allSongs);
                     }
                 });
             } catch (e) {
-                listDiv.innerText = "오류 발생! 시트 공유 설정을 확인하세요.";
+                listEl.innerHTML = "<span style='color:red'>시트 데이터를 가져오지 못했습니다.</span>";
             }
-        }
-
-        // 3. 리스트 화면에 그리기
-        function renderList(data) {
-            const listDiv = document.getElementById('list');
-            listDiv.innerHTML = '';
-
-            data.forEach((song) => {
-                const item = document.createElement('div');
-                item.className = 'song-item';
-                
-                const displayText = `${song.singer} - ${song.title}`;
-                
-                item.innerHTML = `
-                    <div class="song-info">${displayText}</div>
-                    <div class="button-group">
-                        <button class="btn btn-copy" onclick="copyText('${displayText}')">📋 복사</button>
-                        <button class="btn btn-send" onclick="sendToWidget('${song.singer}', '${song.title}')">🚀 위젯전송</button>
-                    </div>
-                `;
-                listDiv.appendChild(item);
-            });
-        }
-
-        // 4. 기능: 복사하기
-        window.copyText = (text) => {
-            navigator.clipboard.writeText(text).then(() => {
-                alert("복사 완료: " + text);
-            });
         };
 
-        // 5. 기능: 위젯으로 전송 (Firebase)
+        // 화면에 노래 표시
+        function displaySongs(data) {
+            const listEl = document.getElementById('song-list');
+            listEl.innerHTML = '';
+
+            data.forEach(song => {
+                const fullStr = `${song.singer} - ${song.title}`;
+                const div = document.createElement('div');
+                div.className = 'song-item';
+                div.innerHTML = `
+                    <span class="song-name">${fullStr}</span>
+                    <div class="btn-group">
+                        <button class="btn btn-copy" onclick="copyText('${fullStr}')">📋 복사</button>
+                        <button class="btn btn-send" onclick="sendToWidget('${song.singer}', '${song.title}')">🚀 전송</button>
+                    </div>
+                `;
+                listEl.appendChild(div);
+            });
+        }
+
+        // 복사 기능
+        window.copyText = (text) => {
+            navigator.clipboard.writeText(text).then(() => alert("복사 완료!"));
+        };
+
+        // 위젯 전송 기능
         window.sendToWidget = (singer, title) => {
             set(ref(db, 'currentSong'), {
                 singer: singer,
                 title: title,
-                time: Date.now()
-            }).then(() => {
-                console.log("전송 성공");
-                // 버튼 시각 피드백 등을 추가할 수 있습니다.
-            });
+                timestamp: Date.now()
+            }).then(() => console.log("전송 성공: " + title));
         };
 
-        // 6. 검색 기능
-        document.getElementById('search').oninput = (e) => {
-            const val = e.target.value.toLowerCase();
-            const filtered = songData.filter(song => 
-                song.singer.toLowerCase().includes(val) || 
-                song.title.toLowerCase().includes(val)
+        // 검색 기능
+        document.getElementById('search').addEventListener('input', (e) => {
+            const word = e.target.value.toLowerCase();
+            const filtered = allSongs.filter(s => 
+                s.singer.toLowerCase().includes(word) || s.title.toLowerCase().includes(word)
             );
-            renderList(filtered);
-        };
+            displaySongs(filtered);
+        });
 
-        // 초기 실행
-        loadSheet();
+        fetchSheetData();
     </script>
 </body>
 </html>
