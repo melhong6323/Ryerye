@@ -6,183 +6,59 @@
     <title>QueenRyeRye Remote</title>
     <script src="https://unpkg.com/papaparse@5.3.2/papaparse.min.js"></script>
     <style>
-        :root {
-            --primary: #3b82f6;
-            --primary-dark: #2563eb;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text: #1e293b;
-            --soop: #0046FF;
-            --yt: #FF0000;
-        }
-
-        body {
-            font-family: 'Pretendard', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 0;
-        }
-
-        /* 1. 중앙 정렬 및 여백 */
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 50px 30px;
-        }
-
-        /* 4-6. 헤더 및 링크 */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 40px;
-        }
-        .header h1 {
-            font-size: 32px;
-            font-weight: 900;
-            margin: 0;
-            color: #0f172a;
-        }
-        .header-links { display: flex; gap: 12px; }
-        .link-btn {
-            padding: 8px 16px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 800;
-            color: white;
-            transition: 0.2s;
-        }
-        .btn-soop { background-color: var(--soop); }
-        .btn-yt { background-color: var(--yt); }
-        .link-btn:hover { transform: translateY(-2px); opacity: 0.9; }
-
-        /* 3. 탭 방식 카테고리 */
-        .category-tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
-        .tab {
-            padding: 10px 20px;
-            border: 1px solid #e2e8f0;
-            background: white;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            color: #64748b;
-            transition: 0.2s;
-        }
-        .tab.active {
-            background-color: var(--primary);
-            color: white;
-            border-color: var(--primary);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
-        }
-
-        /* 8. 검색창 및 리셋 버튼 */
-        .search-area {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 35px;
-        }
-        #search {
-            flex: 1;
-            padding: 14px 25px;
-            border: 2px solid #e2e8f0;
-            border-radius: 15px;
-            font-size: 16px;
-            outline: none;
-        }
-        #search:focus { border-color: var(--primary); }
+        :root { --p: #3b82f6; --bg: #f8fafc; --txt: #1e293b; }
+        body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(--txt); margin: 0; }
+        .container { max-width: 850px; margin: 0 auto; padding: 40px 20px; }
         
-        .btn-widget-reset {
-            background: #1e293b;
-            color: white;
-            border: none;
-            padding: 0 20px;
-            border-radius: 15px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
-        }
+        /* Header & Links */
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .links { display: flex; gap: 8px; }
+        .l-btn { padding: 8px 15px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 800; color: #fff; }
+        
+        /* Nav & Search */
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab { padding: 10px 18px; border: 1px solid #e2e8f0; background: #fff; border-radius: 12px; cursor: pointer; font-weight: 600; color: #64748b; }
+        .tab.active { background: var(--p); color: #fff; border-color: var(--p); }
+        .ctrl { display: flex; gap: 10px; margin-bottom: 30px; }
+        #search { flex: 1; padding: 14px 20px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; outline: none; }
+        .btn-reset { background: #1e293b; color: #fff; border: none; padding: 0 15px; border-radius: 12px; cursor: pointer; font-size: 13px; }
 
-        /* 7. 목록 UI (복사, 가수, 제목, 전송) */
-        .song-item {
-            display: grid;
-            grid-template-columns: 50px 1.2fr 2fr 100px;
-            align-items: center;
-            gap: 15px;
-            background: var(--card-bg);
-            padding: 18px 25px;
-            margin-bottom: 12px;
-            border-radius: 18px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            border: 1px solid #f1f5f9;
-        }
-
-        .song-singer { font-weight: 600; color: #64748b; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
-        .song-title { font-weight: 800; color: #1e293b; font-size: 1.1rem; }
-
-        /* 2. 버튼 디자인 */
-        .btn-copy {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .btn-send {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 10px;
-            font-weight: 800;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        #load-status { display: block; text-align: center; margin-top: 30px; color: #94a3b8; font-size: 13px; }
-
-        @media (max-width: 768px) {
-            .song-item { grid-template-columns: auto 1fr auto; padding: 15px; }
-            .song-singer { font-size: 0.85rem; }
-            .song-title { font-size: 0.95rem; }
-        }
+        /* Song List Item */
+        .item { display: grid; grid-template-columns: 50px 1fr 1.5fr 90px; align-items: center; gap: 15px; background: #fff; padding: 15px 20px; margin-bottom: 10px; border-radius: 15px; border: 1px solid #f1f5f9; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .singer { color: #64748b; font-weight: 600; font-size: 0.95rem; }
+        .title { color: #1e293b; font-weight: 800; font-size: 1.1rem; }
+        
+        /* Buttons & Toast */
+        .b-cp { background: #f8fafc; border: 1px solid #e2e8f0; height: 40px; border-radius: 10px; cursor: pointer; position: relative; }
+        .b-cp.copied::after { content: "복사됨!"; position: absolute; top: -30px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; font-size: 10px; padding: 4px 8px; border-radius: 4px; }
+        .b-sd { background: var(--p); color: #fff; border: none; padding: 10px; border-radius: 10px; font-weight: 800; cursor: pointer; }
+        
+        #status { text-align: center; display: block; margin-top: 20px; color: #94a3b8; font-size: 12px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <header class="header">
-        <h1>QueenRyeRye</h1>
-        <div class="header-links">
-            <a href="https://www.sooplive.co.kr/station/eunyounglove" target="_blank" class="link-btn btn-soop">SOOP</a>
-            <a href="https://www.youtube.com/@queen_rye" target="_blank" class="link-btn btn-yt">YOUTUBE</a>
+    <header>
+        <h1 style="font-size:30px; font-weight:900; margin:0;">QueenRyeRye</h1>
+        <div class="links">
+            <a href="https://www.sooplive.co.kr/station/eunyounglove" target="_blank" class="l-btn" style="background:#0046FF">SOOP</a>
+            <a href="https://www.youtube.com/@queen_rye" target="_blank" class="l-btn" style="background:#FF0000">YOUTUBE</a>
         </div>
     </header>
 
-    <nav class="category-tabs" id="tab-nav">
-        <button class="tab active" onclick="filterCategory('전체')">전체</button>
-    </nav>
+    <div class="tabs" id="tab-nav"></div>
 
-    <div class="search-area">
-        <input type="text" id="search" placeholder="가수 또는 제목으로 검색하세요">
-        <button class="btn-widget-reset" onclick="resetWidget()">위젯 초기화 🔄</button>
+    <div class="ctrl">
+        <input type="text" id="search" placeholder="가수 또는 제목 검색...">
+        <button class="btn-reset" onclick="resetWidget()">위젯 초기화 🔄</button>
     </div>
 
-    <div id="song-list">데이터를 불러오는 중...</div>
-    <span id="load-status">스프레드시트 분석 중...</span>
+    <div id="song-list">데이터 로딩 중...</div>
+    <span id="status">연결 확인 중...</span>
 </div>
+
+
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -199,119 +75,93 @@
     const db = getDatabase(app);
     const SHEET_ID = '1mbBCeoTB4HhOsiTq4SHRmmLcb756TK238N3WIM-y2Tw';
     
-    // 4. OST gid 수정 및 행 시작 규칙 적용
     const categories = [
-        { name: "신곡", gid: "227086206", startRow: 4 }, // 5행부터 (인덱스 4)
-        { name: "K-POP", gid: "706245396", startRow: 7 }, // 8행부터 (인덱스 7)
-        { name: "J-POP", gid: "206609150", startRow: 7 },
-        { name: "POP", gid: "1262892887", startRow: 7 },
-        { name: "트로트", gid: "1709143109", startRow: 7 },
-        { name: "OST", gid: "22473696", startRow: 7 }
+        { name: "전체", gid: "" },
+        { name: "신곡", gid: "227086206", start: 4 },
+        { name: "K-POP", gid: "706245396", start: 7 },
+        { name: "J-POP", gid: "206609150", start: 7 },
+        { name: "POP", gid: "1262892887", start: 7 },
+        { name: "트로트", gid: "1709143109", start: 7 },
+        { name: "OST", gid: "22473696", start: 7 }
     ];
 
     let allSongs = [];
     let currentCat = "전체";
 
-    window.fetchAllData = async function() {
-        const navEl = document.getElementById('tab-nav');
-        allSongs = [];
-        navEl.innerHTML = '<button class="tab ' + (currentCat==='전체'?'active':'') + '" onclick="filterCategory(\'전체\')">전체</button>';
-
-        for (const cat of categories) {
-            const btn = document.createElement('button');
-            btn.className = 'tab' + (currentCat === cat.name ? ' active' : '');
-            btn.innerText = cat.name;
-            btn.onclick = () => filterCategory(cat.name);
-            navEl.appendChild(btn);
-
+    // 1. 데이터 가져오기 (병렬처리로 최적화)
+    async function init() {
+        const fetchTasks = categories.slice(1).map(async (cat) => {
             const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${cat.gid}`;
+            const res = await fetch(url);
+            const csv = await res.text();
             
-            try {
-                const res = await fetch(url);
-                const csv = await res.text();
+            return new Promise(resolve => {
                 Papa.parse(csv, {
-                    complete: (results) => {
-                        let lastSinger = ""; // 1. 셀 병합 처리
-                        const sheetSongs = results.data.slice(cat.startRow)
-                            .map(row => {
-                                let rawSinger = row[1] ? row[1].replace(/"/g, '').trim() : "";
-                                let rawTitle = row[2] ? row[2].replace(/"/g, '').trim() : "";
-
-                                if (rawSinger) lastSinger = rawSinger;
-                                
-                                // 제목이 없으면 데이터로 인정 안 함
-                                if (!rawTitle || rawTitle === "제목") return null;
-
-                                return {
-                                    category: cat.name,
-                                    singer: lastSinger || "미정",
-                                    title: rawTitle
-                                };
-                            })
-                            .filter(song => song !== null);
-                        
-                        allSongs = allSongs.concat(sheetSongs);
-                        updateDisplay();
+                    complete: (res) => {
+                        let lastSinger = "";
+                        const data = res.data.slice(cat.start).map(row => {
+                            const singer = row[1] ? row[1].replace(/"/g, '').trim() : lastSinger;
+                            const title = row[2] ? row[2].replace(/"/g, '').trim() : "";
+                            if(singer) lastSinger = singer;
+                            return title ? { cat: cat.name, singer, title } : null;
+                        }).filter(Boolean);
+                        resolve(data);
                     }
                 });
-            } catch (e) { console.error(cat.name + " 로드 실패"); }
-        }
-        document.getElementById('load-status').innerText = "QueenRyeRye 노래책 동기화 완료";
+            });
+        });
+
+        const results = await Promise.all(fetchTasks);
+        allSongs = results.flat();
+        renderNav();
+        renderSongs();
+        document.getElementById('status').innerText = `✅ ${allSongs.length}곡 동기화 완료`;
     }
 
-    // 2, 3. 카테고리 탭 전환 및 중복 방지
-    window.filterCategory = (catName) => {
-        currentCat = catName;
-        document.querySelectorAll('.tab').forEach(t => {
-            t.classList.toggle('active', t.innerText === catName);
+    // 2. UI 렌더링 함수들
+    function renderNav() {
+        const nav = document.getElementById('tab-nav');
+        nav.innerHTML = categories.map(c => `
+            <button class="tab ${currentCat === c.name ? 'active' : ''}" 
+                    onclick="window.changeCat('${c.name}')">${c.name}</button>
+        `).join('');
+    }
+
+    function renderSongs() {
+        const query = document.getElementById('search').value.toLowerCase();
+        const list = document.getElementById('song-list');
+        
+        const filtered = allSongs.filter(s => 
+            (currentCat === "전체" || s.cat === currentCat) &&
+            (s.singer.toLowerCase().includes(query) || s.title.toLowerCase().includes(query))
+        );
+
+        list.innerHTML = filtered.length ? filtered.map(s => `
+            <div class="item">
+                <button class="b-cp" onclick="window.cp('${s.singer} - ${s.title}', this)">📋</button>
+                <div class="singer">${s.singer}</div>
+                <div class="title">${s.title}</div>
+                <button class="b-sd" onclick="window.sd('${s.singer}', '${s.title}')">🚀 전송</button>
+            </div>
+        `).join('') : '<div style="text-align:center; padding:50px; color:#94a3b8;">곡이 없습니다.</div>';
+    }
+
+    // 3. 글로벌 함수 등록 (버튼 클릭용)
+    window.changeCat = (name) => { currentCat = name; renderNav(); renderSongs(); };
+    window.cp = (txt, btn) => {
+        navigator.clipboard.writeText(txt).then(() => {
+            btn.classList.add('copied');
+            setTimeout(() => btn.classList.remove('copied'), 1500);
         });
-        updateDisplay();
     };
-
-    function updateDisplay() {
-        const listEl = document.getElementById('song-list');
-        const searchTerm = document.getElementById('search').value.toLowerCase();
-        listEl.innerHTML = '';
-
-        const filtered = allSongs.filter(s => {
-            const matchCat = (currentCat === "전체" || s.category === currentCat);
-            const matchSearch = (s.singer.toLowerCase().includes(searchTerm) || s.title.toLowerCase().includes(searchTerm));
-            return matchCat && matchSearch;
-        });
-
-        filtered.forEach(song => {
-            const fullText = `${song.singer} - ${song.title}`;
-            const div = document.createElement('div');
-            div.className = 'song-item';
-            div.innerHTML = `
-                <button class="btn-copy" onclick="copyText('${fullText}')">📋</button>
-                <div class="song-singer">${song.singer}</div>
-                <div class="song-title">${song.title}</div>
-                <button class="btn-send" onclick="sendToWidget('${song.singer}', '${song.title}')">🚀 전송</button>
-            `;
-            listEl.appendChild(div);
-        });
-    }
-
-    // 3. 위젯 리셋 (위젯 장애 대응용)
+    window.sd = (singer, title) => set(ref(db, 'currentSong'), { singer, title, time: Date.now() });
     window.resetWidget = () => {
-        set(ref(db, 'currentSong'), {
-            singer: "QueenRyeRye",
-            title: "방송 대기 중",
-            time: Date.now()
-        }).then(() => alert("위젯을 대기 화면으로 초기화했습니다."));
+        set(ref(db, 'currentSong'), { singer: "QueenRyeRye", title: "방송 대기 중", time: Date.now() })
+        .then(() => alert("초기화 완료"));
     };
 
-    window.copyText = (text) => {
-        navigator.clipboard.writeText(text).then(() => alert("복사 완료!"));
-    };
-
-    window.sendToWidget = (singer, title) => {
-        set(ref(db, 'currentSong'), { singer, title, time: Date.now() });
-    };
-
-    document.getElementById('search').addEventListener('input', updateDisplay);
-    fetchAllData();
+    document.getElementById('search').oninput = renderSongs;
+    init();
 </script>
 </body>
 </html>
