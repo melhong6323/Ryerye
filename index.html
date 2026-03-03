@@ -3,172 +3,323 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOOP 노래 통합 리모컨</title>
+    <title>QueenRyeRye Remote</title>
     <script src="https://unpkg.com/papaparse@5.3.2/papaparse.min.js"></script>
     <style>
-        :root { --primary: #007bff; --bg: #f8f9fa; }
-        body { font-family: 'Pretendard', sans-serif; background: var(--bg); margin: 0; padding: 15px; padding-top: 150px; }
-        
-        /* 고정 헤더 영역 */
-        .fixed-header { position: fixed; top: 0; left: 0; right: 0; background: var(--bg); padding: 15px; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        #search { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box; outline: none; transition: 0.2s; }
-        #search:focus { border-color: var(--primary); }
-        
-        /* 카테고리 네비게이션 */
-        .category-nav { display: flex; gap: 8px; overflow-x: auto; margin-top: 12px; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
-        .cat-btn { padding: 8px 15px; background: white; border: 1px solid #eee; border-radius: 20px; font-size: 13px; cursor: pointer; white-space: nowrap; font-weight: bold; color: #555; }
-        .cat-btn:hover { background: var(--primary); color: white; }
-        
-        #status-msg { font-size: 12px; color: #007bff; margin-top: 8px; display: block; font-weight: bold; }
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --bg: #fdfdfd;
+            --card-bg: #ffffff;
+            --text: #334155;
+            --soop: #0046FF;
+            --yt: #FF0000;
+        }
 
-        /* 리스트 스타일 */
-        .category-section { margin-top: 25px; }
-        .category-title { font-size: 18px; font-weight: 800; color: #333; padding-left: 10px; border-left: 5px solid var(--primary); margin-bottom: 12px; }
-        
-        .song-item { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #efefef; }
-        .song-info { display: block; font-weight: 700; margin-bottom: 10px; font-size: 1.1rem; color: #1a1a1a; }
-        
-        .btn-group { display: flex; gap: 8px; }
-        .btn { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; }
-        .btn-copy { background: #f1f3f5; color: #495057; }
-        .btn-send { background: var(--primary); color: white; }
-        .btn:active { transform: scale(0.96); opacity: 0.8; }
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
 
-        /* 스크롤바 숨기기 */
-        .category-nav::-webkit-scrollbar { display: none; }
+        /* 중앙 정렬 컨테이너 (여백 충분) */
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* 4-6. 상단 헤더 섹션 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            margin: 0;
+            background: linear-gradient(45deg, #1e293b, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-links { display: flex; gap: 10px; }
+        .link-btn {
+            padding: 6px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: bold;
+            color: white;
+            transition: 0.2s;
+        }
+        .btn-soop { background-color: var(--soop); }
+        .btn-yt { background-color: var(--yt); }
+        .link-btn:hover { opacity: 0.8; transform: translateY(-2px); }
+
+        /* 3. 카테고리 탭 (어지러움 방지) */
+        .category-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 15px;
+        }
+        .tab {
+            padding: 8px 18px;
+            border: none;
+            background: #f1f5f9;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+            transition: 0.3s;
+        }
+        .tab.active {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        }
+
+        /* 8. 검색창 및 새로고침 버튼 */
+        .search-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        #search {
+            flex: 1;
+            padding: 12px 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 15px;
+            outline: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        #search:focus { border-color: var(--primary); border-width: 2px; }
+        .btn-refresh {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 0 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: 0.2s;
+        }
+        .btn-refresh:hover { background: #f8fafc; transform: rotate(45deg); }
+
+        /* 7. 노래 목록 아이템 UI */
+        .song-item {
+            display: grid;
+            grid-template-columns: auto 1fr 1.5fr auto;
+            align-items: center;
+            gap: 20px;
+            background: var(--card-bg);
+            padding: 15px 25px;
+            margin-bottom: 12px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid #f1f5f9;
+            transition: 0.2s;
+        }
+        .song-item:hover { transform: scale(1.01); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08); }
+
+        .song-singer { font-weight: 600; color: #475569; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .song-title { font-weight: 700; color: #1e293b; font-size: 1.1rem; }
+
+        /* 2. 버튼 디자인 */
+        .btn-mini-copy {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        .btn-mini-copy:hover { background: #f1f5f9; }
+
+        .btn-send {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+        .btn-send:hover { opacity: 0.9; box-shadow: 0 6px 15px rgba(59, 130, 246, 0.3); }
+
+        #load-status {
+            text-align: center; font-size: 12px; color: #94a3b8; margin-top: 20px; display: block;
+        }
+
+        @media (max-width: 600px) {
+            .song-item { grid-template-columns: auto 1fr auto; gap: 10px; padding: 12px; }
+            .song-title { grid-column: 2 / 3; font-size: 1rem; }
+            .song-singer { grid-column: 2 / 3; font-size: 0.8rem; }
+            .btn-send { grid-column: 3 / 4; grid-row: 1 / 3; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="fixed-header">
-        <input type="text" id="search" placeholder="가수 또는 노래 제목 검색...">
-        <div class="category-nav" id="cat-nav"></div>
-        <span id="status-msg">데이터 로딩 중...</span>
+<div class="container">
+    <header class="header">
+        <h1>QueenRyeRye</h1>
+        <div class="header-links">
+            <a href="https://www.sooplive.co.kr/station/eunyounglove" target="_blank" class="link-btn btn-soop">SOOP</a>
+            <a href="https://www.youtube.com/@queen_rye" target="_blank" class="link-btn btn-yt">YOUTUBE</a>
+        </div>
+    </header>
+
+    <nav class="category-tabs" id="tab-nav">
+        <button class="tab active" onclick="filterCategory('전체')">전체</button>
+    </nav>
+
+    <div class="search-area">
+        <input type="text" id="search" placeholder="찾으시는 곡이나 가수를 입력하세요...">
+        <button class="btn-refresh" onclick="fetchAllData()" title="시트 새로고침">🔄</button>
     </div>
 
-    <div id="song-list-container"></div>
+    <div id="song-list"></div>
+    <span id="load-status">데이터 연결 중...</span>
+</div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // 파이어베이스 설정
-        const firebaseConfig = {
-            apiKey: "AIzaSyDD81eW0FEgovKUjM2RwE9S-XHhEz2V2gU",
-            databaseURL: "https://queenryerye-d8dac-default-rtdb.firebaseio.com/",
-            projectId: "queenryerye-d8dac",
-            appId: "1:217840989435:web:f2391bb48fda1c49f12c5e"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyDD81eW0FEgovKUjM2RwE9S-XHhEz2V2gU",
+        databaseURL: "https://queenryerye-d8dac-default-rtdb.firebaseio.com/",
+        projectId: "queenryerye-d8dac",
+        appId: "1:217840989435:web:f2391bb48fda1c49f12c5e"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const SHEET_ID = '1mbBCeoTB4HhOsiTq4SHRmmLcb756TK238N3WIM-y2Tw';
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const SHEET_ID = '1mbBCeoTB4HhOsiTq4SHRmmLcb756TK238N3WIM-y2Tw';
+    
+    const categories = [
+        { name: "신곡", gid: "227086206" },
+        { name: "K-POP", gid: "706245396" },
+        { name: "J-POP", gid: "206609150" },
+        { name: "POP", gid: "1262892887" },
+        { name: "트로트", gid: "1709143109" },
+        { name: "OST", gid: "1709143109" }
+    ];
+
+    let allSongs = [];
+    let currentCat = "전체";
+
+    // 데이터 불러오기
+    window.fetchAllData = async function() {
+        const statusEl = document.getElementById('load-status');
+        const navEl = document.getElementById('tab-nav');
+        allSongs = [];
         
-        // 제공해주신 모든 gid 적용
-        const categories = [
-            { name: "신곡", gid: "227086206" },
-            { name: "K-POP", gid: "706245396" },
-            { name: "J-POP", gid: "206609150" },
-            { name: "POP", gid: "1262892887" },
-            { name: "트로트", gid: "1709143109" },
-            { name: "OST", gid: "1709143109" }
-        ];
+        // 탭 초기화 (전체 버튼은 유지)
+        navEl.innerHTML = '<button class="tab active" onclick="filterCategory(\'전체\')">전체</button>';
 
-        let allSongs = [];
+        for (const cat of categories) {
+            const btn = document.createElement('button');
+            btn.className = 'tab';
+            btn.innerText = cat.name;
+            btn.onclick = () => filterCategory(cat.name);
+            navEl.appendChild(btn);
 
-        async function fetchAllData() {
-            const statusEl = document.getElementById('status-msg');
-            const navEl = document.getElementById('cat-nav');
-            allSongs = [];
-            navEl.innerHTML = '';
+            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${cat.gid}`;
             
-            for (const cat of categories) {
-                // 상단 이동 버튼 생성
-                const btn = document.createElement('button');
-                btn.className = 'cat-btn';
-                btn.innerText = cat.name;
-                btn.onclick = () => {
-                    const el = document.getElementById(`section-${cat.name}`);
-                    if(el) window.scrollTo({ top: el.offsetTop - 145, behavior: 'smooth' });
-                };
-                navEl.appendChild(btn);
-
-                const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${cat.gid}`;
-                
-                try {
-                    const res = await fetch(url);
-                    const csv = await res.text();
-                    
-                    Papa.parse(csv, {
-                        complete: (results) => {
-                            const sheetSongs = results.data.slice(1) // B(1), C(2)열 타겟팅
-                                .filter(row => row[1] && row[2]) 
-                                .map(row => ({
-                                    category: cat.name,
-                                    singer: row[1].replace(/"/g, '').trim(),
-                                    title: row[2].replace(/"/g, '').trim()
-                                }));
-                            allSongs = allSongs.concat(sheetSongs);
-                            renderAll(allSongs);
-                        }
-                    });
-                } catch (e) { console.error(cat.name + " 로딩 에러"); }
-            }
-            statusEl.innerText = `✅ 총 ${allSongs.length}곡 로드 완료`;
-        }
-
-        function renderAll(songs) {
-            const container = document.getElementById('song-list-container');
-            container.innerHTML = '';
-            
-            // 카테고리별 그룹화
-            const grouped = songs.reduce((acc, s) => { (acc[s.category] = acc[s.category] || []).push(s); return acc; }, {});
-
-            for (const catName in grouped) {
-                const section = document.createElement('div');
-                section.className = 'category-section';
-                section.id = `section-${catName}`;
-                section.innerHTML = `<div class="category-title">${catName} (${grouped[catName].length})</div>`;
-                
-                grouped[catName].forEach(song => {
-                    const fullStr = `${song.singer} - ${song.title}`;
-                    const item = document.createElement('div');
-                    item.className = 'song-item';
-                    item.innerHTML = `
-                        <span class="song-info">${fullStr}</span>
-                        <div class="btn-group">
-                            <button class="btn btn-copy" onclick="copyText('${fullStr}')">📋 복사</button>
-                            <button class="btn btn-send" onclick="sendToWidget('${song.singer}', '${song.title}')">🚀 전송</button>
-                        </div>
-                    `;
-                    section.appendChild(item);
+            try {
+                const res = await fetch(url);
+                const csv = await res.text();
+                Papa.parse(csv, {
+                    complete: (results) => {
+                        const sheetSongs = results.data.slice(1)
+                            .filter(row => row[1] && row[2])
+                            .map(row => ({
+                                category: cat.name,
+                                singer: row[1].replace(/"/g, '').trim(),
+                                title: row[2].replace(/"/g, '').trim()
+                            }));
+                        allSongs = allSongs.concat(sheetSongs);
+                        updateDisplay();
+                    }
                 });
-                container.appendChild(section);
-            }
+            } catch (e) { console.error(cat.name + " 실패"); }
         }
+        statusEl.innerText = `QueenRyeRye 노래책 연결 완료`;
+    }
 
-        window.copyText = (text) => {
-            navigator.clipboard.writeText(text).then(() => alert("복사 완료!"));
-        };
+    // 카테고리 필터링 (스크롤 없이 교체)
+    window.filterCategory = (catName) => {
+        currentCat = catName;
+        document.querySelectorAll('.tab').forEach(t => {
+            t.classList.toggle('active', t.innerText.includes(catName));
+        });
+        updateDisplay();
+    };
 
-        window.sendToWidget = (singer, title) => {
-            set(ref(db, 'currentSong'), { singer, title, time: Date.now() })
-            .then(() => {
-                document.getElementById('status-msg').innerText = `📡 위젯 전송 성공: ${title}`;
-                setTimeout(() => document.getElementById('status-msg').innerText = `✅ 로드 완료`, 2000);
-            });
-        };
+    // 화면 갱신
+    function updateDisplay() {
+        const listEl = document.getElementById('song-list');
+        const searchTerm = document.getElementById('search').value.toLowerCase();
+        listEl.innerHTML = '';
 
-        // 실시간 검색 기능
-        document.getElementById('search').addEventListener('input', (e) => {
-            const word = e.target.value.toLowerCase();
-            const filtered = allSongs.filter(s => 
-                s.singer.toLowerCase().includes(word) || s.title.toLowerCase().includes(word)
-            );
-            renderAll(filtered);
+        const filtered = allSongs.filter(s => {
+            const matchCat = (currentCat === "전체" || s.category === currentCat);
+            const matchSearch = (s.singer.toLowerCase().includes(searchTerm) || s.title.toLowerCase().includes(searchTerm));
+            return matchCat && matchSearch;
         });
 
-        fetchAllData();
-    </script>
+        filtered.forEach(song => {
+            const fullText = `${song.singer} - ${song.title}`;
+            const div = document.createElement('div');
+            div.className = 'song-item';
+            div.innerHTML = `
+                <button class="btn-mini-copy" onclick="copyText('${fullText}')" title="복사">📋</button>
+                <div class="song-singer">${song.singer}</div>
+                <div class="song-title">${song.title}</div>
+                <button class="btn-send" onclick="sendToWidget('${song.singer}', '${song.title}')">🚀 전송</button>
+            `;
+            listEl.appendChild(div);
+        });
+    }
+
+    window.copyText = (text) => {
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = event.target;
+            const original = btn.innerText;
+            btn.innerText = "✅";
+            setTimeout(() => btn.innerText = "📋", 1000);
+        });
+    };
+
+    window.sendToWidget = (singer, title) => {
+        set(ref(db, 'currentSong'), { singer, title, time: Date.now() })
+        .then(() => {
+            console.log("전송완료");
+            // 전송 시 시각적 효과 (선택사항)
+        });
+    };
+
+    document.getElementById('search').addEventListener('input', updateDisplay);
+
+    fetchAllData();
+</script>
 </body>
 </html>
