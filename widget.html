@@ -3,33 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        body { background: transparent; overflow: hidden; margin: 0; color: white; text-shadow: 2px 2px 4px #000; }
-        #widget-container { 
-            display: flex; align-items: center; 
-            padding: 10px; font-size: 24px; font-weight: bold;
-            background: rgba(0,0,0,0.5); border-radius: 10px; width: fit-content;
+        @import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap');
+        
+        body { 
+            background: transparent; 
+            margin: 0; 
+            overflow: hidden; 
+            display: flex; 
+            align-items: center; 
         }
-        #title { color: #ffeb3b; margin-right: 10px; }
-        #singer { font-size: 18px; color: #eee; }
+        
+        #widget-wrap {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.7); /* 검정 반투명 배경 */
+            padding: 10px 25px;
+            border-radius: 50px;
+            border-left: 8px solid #007bff;
+            color: white;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .icon { font-size: 24px; margin-right: 15px; }
+        
+        .content { font-family: 'Black Han Sans', sans-serif; }
+        #title { font-size: 28px; color: #ffeb3b; } /* 노란색 곡 제목 */
+        #singer { font-size: 20px; color: #ffffff; opacity: 0.9; margin-left: 10px; }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
     </style>
 </head>
 <body>
-    <div id="widget-container">
-        <span id="title">현재 곡 없음</span>
-        <span id="singer">가수</span>
+
+    <div id="widget-wrap">
+        <span class="icon">🎵</span>
+        <div class="content">
+            <span id="title">방송 대기 중</span>
+            <span id="singer">가수</span>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        const firebaseConfig = { /* 리모컨과 동일한 설정값 입력 */ };
+        const firebaseConfig = {
+            apiKey: "AIzaSyDD81eW0FEgovKUjM2RwE9S-XHhEz2V2gU",
+            databaseURL: "https://queenryerye-d8dac-default-rtdb.firebaseio.com/",
+            projectId: "queenryerye-d8dac",
+            appId: "1:217840989435:web:f2391bb48fda1c49f12c5e"
+        };
+
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
         onValue(ref(db, 'currentSong'), (snapshot) => {
             const data = snapshot.val();
             if (data) {
+                const wrap = document.getElementById('widget-wrap');
+                // 새로운 곡이 들어오면 애니메이션 다시 실행
+                wrap.style.animation = 'none';
+                void wrap.offsetWidth; 
+                wrap.style.animation = 'slideIn 0.5s ease-out';
+
                 document.getElementById('title').innerText = data.title;
                 document.getElementById('singer').innerText = data.singer;
             }
