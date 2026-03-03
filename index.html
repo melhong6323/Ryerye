@@ -6,18 +6,18 @@
     <title>QueenRyeRye Remote</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        :root { --p: #2563eb; --bg: #f8fafc; --card: #ffffff; --txt: #1e293b; --txt-l: #64748b; }
+        :root { --p: #2563eb; --bg: #f8fafc; --txt: #1e293b; --txt-l: #64748b; }
         body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(--txt); margin: 0; }
-        .container { max-width: 900px; margin: 0 auto; padding: 40px 25px; }
+        .container { max-width: 850px; margin: 0 auto; padding: 40px 20px; }
         
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .brand { font-size: 32px; font-weight: 900; margin: 0; letter-spacing: -1.5px; }
+        .brand { font-size: 32px; font-weight: 900; letter-spacing: -1.5px; margin: 0; }
         .links { display: flex; gap: 8px; }
         .l-btn { padding: 8px 15px; border-radius: 10px; text-decoration: none; font-size: 13px; font-weight: 800; color: #fff; }
         
         .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
         .tab { padding: 12px 18px; border: 1px solid #e2e8f0; background: #fff; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--txt-l); }
-        .tab.active { background: var(--p); color: #fff; border-color: var(--p); box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2); }
+        .tab.active { background: var(--p); color: #fff; border-color: var(--p); }
         
         .ctrl { display: flex; gap: 10px; margin-bottom: 30px; }
         #search { flex: 1; padding: 14px 20px; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 16px; outline: none; }
@@ -27,9 +27,12 @@
         .singer { color: var(--txt-l); font-weight: 600; font-size: 0.95rem; }
         .title { color: #1e293b; font-weight: 800; font-size: 1.15rem; }
         
+        /* 📋 Copy 버튼 디자인 */
         .b-cp { background: #f8fafc; border: 1px solid #e2e8f0; height: 42px; border-radius: 12px; cursor: pointer; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 5px; color: var(--txt-l); position: relative; }
         .b-cp.copied::after { content: "Copied!"; position: absolute; top: -35px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; font-size: 11px; padding: 5px 10px; border-radius: 6px; }
-        .b-sd { background: var(--p); color: #fff; border: none; padding: 10px 18px; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 12px; letter-spacing: 1px; }
+        
+        /* SEND 버튼 디자인 */
+        .b-sd { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; border: none; padding: 10px 18px; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 12px; letter-spacing: 1px; }
         
         #status { text-align: center; display: block; margin-top: 20px; color: #94a3b8; font-size: 12px; font-weight: bold; }
 
@@ -58,8 +61,8 @@
         <button class="btn-reset" onclick="resetWidget()">RESET WIDGET 🔄</button>
     </div>
 
-    <div id="song-list">Syncing database...</div>
-    <span id="status">Connecting...</span>
+    <div id="song-list">목록을 불러오는 중...</div>
+    <span id="status">연결 확인 중...</span>
 </div>
 
 <script type="module">
@@ -77,58 +80,54 @@
     const db = getDatabase(app);
     const SHEET_ID = '1mbBCeoTB4HhOsiTq4SHRmmLcb756TK238N3WIM-y2Tw';
     
-    // GID 및 데이터 시작 행 설정
+    // 보내주신 정확한 GID 정보
     const categories = [
         { name: "전체", gid: "" },
-        { name: "신곡", gid: "227086206", start: 4 }, 
-        { name: "K-POP", gid: "706245396", start: 7 }, 
-        { name: "J-POP", gid: "206609150", start: 4 }, // J-POP도 신곡처럼 앞부분부터 훑도록 조정
-        { name: "POP", gid: "1262892887", start: 7 },
-        { name: "트로트", gid: "1709143109", start: 7 },
-        { name: "OST", gid: "22473696", start: 7 }
+        { name: "신곡", gid: "227086206" }, 
+        { name: "K-POP", gid: "706245396" }, 
+        { name: "J-POP", gid: "206609150" }, 
+        { name: "POP", gid: "1262892887" },
+        { name: "트로트", gid: "1709143109" },
+        { name: "OST", gid: "22473696" }
     ];
 
     let allSongs = [];
     let currentCat = "전체";
 
     async function init() {
-        const fetchTasks = categories.slice(1).map(async (cat) => {
+        allSongs = [];
+        // 각 카테고리를 하나씩 불러옵니다.
+        for (const cat of categories.slice(1)) {
             const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${cat.gid}`;
             try {
                 const res = await fetch(url);
                 const csv = await res.text();
                 
-                return new Promise(resolve => {
+                await new Promise(resolve => {
                     Papa.parse(csv, {
-                        skipEmptyLines: true,
                         complete: (res) => {
                             let lastSinger = "";
-                            const data = res.data.slice(cat.start).map(row => {
-                                // 가수(B열)와 제목(C열)을 더 확실히 잡아내기 위한 보정
-                                let s = row[1] ? String(row[1]).trim() : "";
-                                let t = row[2] ? String(row[2]).trim() : "";
+                            // 데이터 분석: 1행부터 끝까지 훑으며 제목(C열)이 있는 것만 골라냅니다.
+                            const data = res.data.map(row => {
+                                const s = row[1] ? String(row[1]).trim() : "";
+                                const t = row[2] ? String(row[2]).trim() : "";
 
-                                // 10cm 같은 이름이 Unknown으로 안 나오게 하는 핵심 로직
-                                if (s !== "") lastSinger = s.replace(/"/g, '');
-                                
-                                // 제목이 없으면 노래로 인정하지 않음
-                                if (!t || t === "제목" || t === "TITLE") return null;
+                                if (s !== "") lastSinger = s;
+                                // 제목 칸에 '제목'이라는 단어가 있거나 비어있으면 노래가 아닙니다.
+                                if (!t || t === "제목" || t === "곡제목" || t === "TITLE") return null;
 
-                                return { cat: cat.name, singer: lastSinger || "Unknown", title: t.replace(/"/g, '') };
+                                return { cat: cat.name, singer: lastSinger || "가수 미상", title: t };
                             }).filter(Boolean);
-                            console.log(`${cat.name} 로드 완료: ${data.length}곡`);
-                            resolve(data);
+                            allSongs = allSongs.concat(data);
+                            resolve();
                         }
                     });
                 });
-            } catch (e) { return []; }
-        });
-
-        const results = await Promise.all(fetchTasks);
-        allSongs = results.flat();
-        renderNav();
-        renderSongs();
-        document.getElementById('status').innerText = `✅ Total ${allSongs.length} songs synced`;
+                renderNav();
+                renderSongs();
+            } catch (e) { console.error(cat.name + " 로드 실패"); }
+        }
+        document.getElementById('status').innerText = `✅ 총 ${allSongs.length}곡 동기화 완료`;
     }
 
     function renderNav() {
@@ -147,14 +146,14 @@
             (s.singer.toLowerCase().includes(query) || s.title.toLowerCase().includes(query))
         );
 
-        list.innerHTML = filtered.length ? filtered.map(s => `
+        list.innerHTML = filtered.map(s => `
             <div class="item">
                 <button class="b-cp" onclick="window.cp('${s.singer} - ${s.title}', this)">📋 Copy</button>
                 <div class="singer">${s.singer}</div>
                 <div class="title">${s.title}</div>
                 <button class="b-sd" onclick="window.sd('${s.singer}', '${s.title}')">SEND</button>
             </div>
-        `).join('') : '<div style="text-align:center; padding:80px; color:#94a3b8; font-weight:600;">No results found.</div>';
+        `).join('') || '<div style="text-align:center; padding:50px; color:#94a3b8;">데이터가 없습니다.</div>';
     }
 
     window.changeCat = (name) => { currentCat = name; renderNav(); renderSongs(); };
@@ -166,8 +165,8 @@
     };
     window.sd = (singer, title) => set(ref(db, 'currentSong'), { singer, title, time: Date.now() });
     window.resetWidget = () => {
-        set(ref(db, 'currentSong'), { singer: "QueenRyeRye", title: "Standby Mode", time: Date.now() })
-        .then(() => alert("Widget Initialized."));
+        set(ref(db, 'currentSong'), { singer: "QueenRyeRye", title: "방송 대기 중", time: Date.now() })
+        .then(() => alert("위젯 초기화 완료"));
     };
 
     document.getElementById('search').oninput = renderSongs;
