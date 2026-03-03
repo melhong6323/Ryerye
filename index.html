@@ -8,60 +8,61 @@
     <style>
         :root {
             --p: #2563eb; --bg: #f8fafc; --card: #ffffff;
-            --txt: #1e293b; --txt-light: #64748b;
-            --soop: #0046FF; --yt: #FF0000;
+            --txt: #1e293b; --txt-l: #64748b;
         }
 
         body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(--txt); margin: 0; }
-        .container { max-width: 850px; margin: 0 auto; padding: 40px 20px; }
+        .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
 
+        /* 상단 타이틀 및 링크 */
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .brand { font-size: 34px; font-weight: 900; margin: 0; letter-spacing: -1.5px; color: #0f172a; }
-        .links { display: flex; gap: 10px; }
-        .l-btn { padding: 9px 18px; border-radius: 12px; text-decoration: none; font-size: 13px; font-weight: 800; color: #fff; transition: 0.3s; }
+        .brand { font-size: 30px; font-weight: 900; letter-spacing: -1px; margin: 0; }
+        .links { display: flex; gap: 8px; }
+        .l-btn { padding: 8px 15px; border-radius: 10px; text-decoration: none; font-size: 12px; font-weight: 800; color: #fff; }
 
-        .tabs { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
-        .tab { padding: 12px 22px; border: 1px solid #e2e8f0; background: #fff; border-radius: 14px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--txt-light); }
-        .tab.active { background: var(--p); color: #fff; border-color: var(--p); box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.2); }
+        /* 탭 및 검색창 */
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab { padding: 10px 16px; border: 1px solid #e2e8f0; background: #fff; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--txt-l); }
+        .tab.active { background: var(--p); color: #fff; border-color: var(--p); }
 
-        .ctrl { display: flex; gap: 12px; margin-bottom: 30px; }
-        #search { flex: 1; padding: 16px 25px; border: 2px solid #e2e8f0; border-radius: 16px; font-size: 16px; outline: none; background: #fff; }
-        .btn-reset { background: #0f172a; color: #fff; border: none; padding: 0 20px; border-radius: 16px; cursor: pointer; font-size: 13px; font-weight: 700; }
+        .ctrl { display: flex; gap: 10px; margin-bottom: 30px; }
+        #search { flex: 1; padding: 14px 20px; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 16px; outline: none; }
+        .btn-reset { background: #0f172a; color: #fff; border: none; padding: 0 15px; border-radius: 14px; cursor: pointer; font-size: 13px; font-weight: 700; }
 
+        /* 목록 아이템: [복사] [가수] [제목] [전송] */
         .item { 
-            display: grid; grid-template-columns: 110px 1fr 1.5fr 110px; 
-            align-items: center; gap: 20px; background: var(--card); 
-            padding: 20px 25px; margin-bottom: 12px; border-radius: 20px; 
-            border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+            display: grid; grid-template-columns: 100px 1fr 1.5fr 100px; 
+            align-items: center; gap: 15px; background: var(--card); 
+            padding: 15px 20px; margin-bottom: 10px; border-radius: 15px; 
+            border: 1px solid #f1f5f9; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
+        .singer { color: var(--txt-l); font-weight: 600; font-size: 0.95rem; }
+        .title { color: #1e293b; font-weight: 800; font-size: 1.1rem; }
 
-        .singer { color: var(--txt-light); font-weight: 600; font-size: 0.95rem; }
-        .title { color: #1e293b; font-weight: 800; font-size: 1.15rem; }
-
+        /* 버튼 디자인 */
         .b-cp { 
-            background: #f8fafc; border: 1px solid #e2e8f0; height: 44px; 
-            border-radius: 12px; cursor: pointer; font-size: 13px; font-weight: 700;
-            display: flex; align-items: center; justify-content: center; gap: 6px;
-            color: var(--txt-light); position: relative;
+            background: #f8fafc; border: 1px solid #e2e8f0; height: 38px; 
+            border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center; gap: 5px; color: var(--txt-l);
+            position: relative;
         }
         .b-cp.copied::after { 
-            content: "Copied!"; position: absolute; top: -35px; left: 50%; transform: translateX(-50%); 
-            background: #1e293b; color: #fff; font-size: 11px; padding: 5px 10px; border-radius: 8px; 
+            content: "Copied!"; position: absolute; top: -30px; left: 50%; transform: translateX(-50%); 
+            background: #333; color: #fff; font-size: 10px; padding: 4px 8px; border-radius: 5px; 
         }
 
         .b-sd { 
             background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; 
-            border: none; padding: 12px; border-radius: 12px; font-weight: 900; 
-            font-size: 12px; letter-spacing: 1.5px; cursor: pointer; text-transform: uppercase;
+            border: none; padding: 10px; border-radius: 10px; font-weight: 900; 
+            font-size: 12px; letter-spacing: 1px; cursor: pointer;
         }
 
-        #status { text-align: center; display: block; margin-top: 30px; color: #94a3b8; font-size: 13px; }
-        .error-msg { color: #ef4444; background: #fee2e2; padding: 15px; border-radius: 12px; margin-top: 10px; font-size: 14px; text-align: center; }
+        #status { text-align: center; display: block; margin-top: 20px; color: #94a3b8; font-size: 12px; }
 
-        @media (max-width: 768px) {
-            .item { grid-template-columns: auto 1fr auto; padding: 15px; }
-            .b-cp { width: 75px; font-size: 11px; }
-            .b-sd { width: 85px; font-size: 11px; letter-spacing: 0.5px; }
+        @media (max-width: 600px) {
+            .item { grid-template-columns: auto 1fr auto; }
+            .singer, .title { grid-column: 2; }
+            .b-sd { grid-column: 3; grid-row: 1 / 3; }
         }
     </style>
 </head>
@@ -71,8 +72,8 @@
     <header>
         <h1 class="brand">QueenRyeRye</h1>
         <div class="links">
-            <a href="https://www.sooplive.co.kr/station/eunyounglove" target="_blank" class="l-btn" style="background:var(--soop)">SOOP</a>
-            <a href="https://www.youtube.com/@queen_rye" target="_blank" class="l-btn" style="background:var(--yt)">YOUTUBE</a>
+            <a href="https://www.sooplive.co.kr/station/eunyounglove" target="_blank" class="l-btn" style="background:#0046FF">SOOP</a>
+            <a href="https://www.youtube.com/@queen_rye" target="_blank" class="l-btn" style="background:#FF0000">YOUTUBE</a>
         </div>
     </header>
 
@@ -80,11 +81,10 @@
 
     <div class="ctrl">
         <input type="text" id="search" placeholder="가수 또는 제목 검색...">
-        <button class="btn-reset" onclick="resetWidget()">RESET 🔄</button>
+        <button class="btn-reset" onclick="resetWidget()">RESET WIDGET 🔄</button>
     </div>
 
     <div id="song-list">목록을 불러오는 중...</div>
-    <div id="error-log"></div>
     <span id="status">연결 확인 중...</span>
 </div>
 
@@ -117,45 +117,42 @@
     let currentCat = "전체";
 
     async function init() {
-        const statusEl = document.getElementById('status');
-        const errorEl = document.getElementById('error-log');
-        allSongs = [];
-
-        // 라이브러리 로드 여부 확인
-        if (typeof Papa === 'undefined') {
-            errorEl.innerHTML = `<div class="error-msg">⚠️ 라이브러리가 브라우저에 의해 차단되었습니다.<br>Edge 설정에서 '추적 방지'를 '기본'으로 낮추거나 크롬을 사용해주세요.</div>`;
-            return;
-        }
-
-        for (const cat of categories.slice(1)) {
+        const fetchTasks = categories.slice(1).map(async (cat) => {
             const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${cat.gid}`;
+            const res = await fetch(url);
+            const csv = await res.text();
             
-            try {
-                const res = await fetch(url);
-                if (!res.ok) throw new Error('시트 연결 실패');
-                const csv = await res.text();
-                
+            return new Promise(resolve => {
                 Papa.parse(csv, {
-                    skipEmptyLines: true,
                     complete: (res) => {
-                        let lastSinger = "";
+                        let lastSinger = "가수 미상";
                         const data = res.data.slice(cat.start).map(row => {
-                            let singer = (row[1] || "").toString().trim();
-                            let title = (row[2] || "").toString().trim();
-                            if (singer) lastSinger = singer.replace(/"/g, '');
-                            if (!title || title === "제목") return null;
-                            return { cat: cat.name, singer: lastSinger || "Unknown", title: title.replace(/"/g, '') };
+                            // 단순하게 처리: 값이 있으면 쓰고, 없으면 이전 값 사용
+                            const singerRaw = row[1] ? String(row[1]).trim() : "";
+                            const titleRaw = row[2] ? String(row[2]).trim() : "";
+
+                            if (singerRaw !== "") lastSinger = singerRaw.replace(/"/g, '');
+                            
+                            // 제목이 없으면 데이터로 취급 안함
+                            if (!titleRaw || titleRaw === "제목") return null;
+
+                            return { 
+                                cat: cat.name, 
+                                singer: lastSinger, 
+                                title: titleRaw.replace(/"/g, '') 
+                            };
                         }).filter(Boolean);
-                        allSongs = allSongs.concat(data);
-                        renderNav();
-                        renderSongs();
+                        resolve(data);
                     }
                 });
-            } catch (e) {
-                console.error(`${cat.name} 에러:`, e);
-            }
-        }
-        statusEl.innerText = `✅ 총 ${allSongs.length}곡 로드 완료`;
+            });
+        });
+
+        const results = await Promise.all(fetchTasks);
+        allSongs = results.flat();
+        renderNav();
+        renderSongs();
+        document.getElementById('status').innerText = `✅ ${allSongs.length}곡 불러오기 성공`;
     }
 
     function renderNav() {
@@ -176,9 +173,7 @@
 
         list.innerHTML = filtered.length ? filtered.map(s => `
             <div class="item">
-                <button class="b-cp" onclick="window.cp('${s.singer} - ${s.title}', this)">
-                    <span>📋</span> Copy
-                </button>
+                <button class="b-cp" onclick="window.cp('${s.singer} - ${s.title}', this)">📋 Copy</button>
                 <div class="singer">${s.singer}</div>
                 <div class="title">${s.title}</div>
                 <button class="b-sd" onclick="window.sd('${s.singer}', '${s.title}')">SEND</button>
@@ -196,7 +191,7 @@
     window.sd = (singer, title) => set(ref(db, 'currentSong'), { singer, title, time: Date.now() });
     window.resetWidget = () => {
         set(ref(db, 'currentSong'), { singer: "QueenRyeRye", title: "방송 대기 중", time: Date.now() })
-        .then(() => alert("초기화 완료"));
+        .then(() => alert("위젯 초기화 완료"));
     };
 
     document.getElementById('search').oninput = renderSongs;
