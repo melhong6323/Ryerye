@@ -7,40 +7,50 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
 <style>
-:root {
-    --p:#2563eb; --bg:#f8fafc; --card:#fff;
-    --txt:#0f172a; --txt-l:#64748b;
+:root{
+--p:#2563eb;--bg:#f8fafc;--card:#fff;
+--txt:#0f172a;--txt-l:#64748b;
 }
-body {font-family:'Pretendard',sans-serif;background:var(--bg);margin:0;}
-.container{max-width:850px;margin:0 auto;padding:40px 20px;}
-.tabs{display:flex;gap:8px;margin-bottom:25px;flex-wrap:wrap;}
-.tab{padding:12px 22px;border:1px solid #e2e8f0;background:#fff;border-radius:14px;cursor:pointer;font-weight:600;color:var(--txt-l);}
-.tab.active{background:var(--p);color:#fff;border-color:var(--p);}
-.ctrl{display:flex;gap:12px;margin-bottom:25px;}
-#search{flex:1;padding:15px;border:2px solid #e2e8f0;border-radius:16px;}
-.btn-reset{background:#0f172a;color:#fff;border:none;padding:0 20px;border-radius:16px;cursor:pointer;}
+body{font-family:'Pretendard',sans-serif;background:var(--bg);margin:0}
+.container{max-width:900px;margin:0 auto;padding:40px 20px}
+h1{margin-bottom:20px}
+
+.tabs{display:flex;gap:8px;margin-bottom:25px;flex-wrap:wrap}
+.tab{padding:12px 20px;border:1px solid #e2e8f0;background:#fff;border-radius:14px;cursor:pointer;font-weight:600;color:var(--txt-l)}
+.tab.active{background:var(--p);color:#fff;border-color:var(--p)}
+
+.ctrl{display:flex;gap:12px;margin-bottom:25px}
+#search{flex:1;padding:14px;border:2px solid #e2e8f0;border-radius:14px}
+.btn-reset{background:#0f172a;color:#fff;border:none;padding:0 20px;border-radius:14px;cursor:pointer}
+
 .item{
 display:grid;
 grid-template-columns:110px 1.2fr 2fr 110px;
-gap:20px;
+gap:15px;
 background:#fff;
-padding:18px;
+padding:16px;
 margin-bottom:10px;
 border-radius:18px;
+align-items:center;
 }
-.singer{color:#64748b;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.title{font-weight:800;}
+
+.singer{color:var(--txt-l);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.title{font-weight:800}
+
 .b-cp,.b-sd{
-height:42px;border-radius:12px;cursor:pointer;font-weight:700;
+height:40px;border-radius:12px;cursor:pointer;font-weight:700
 }
-.b-cp{border:1px solid #e2e8f0;background:#f8fafc;}
-.b-sd{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;}
+.b-cp{border:1px solid #e2e8f0;background:#f1f5f9}
+.b-sd{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none}
+
+#status{text-align:center;margin-top:25px;color:#64748b;font-size:14px}
 </style>
 </head>
 <body>
 
 <div class="container">
 <h1>QueenRyeRye</h1>
+
 <div class="tabs" id="tab-nav"></div>
 
 <div class="ctrl">
@@ -48,7 +58,7 @@ height:42px;border-radius:12px;cursor:pointer;font-weight:700;
 <button class="btn-reset" onclick="resetWidget()">RESET</button>
 </div>
 
-<div id="song-list">Loading...</div>
+<div id="song-list">🔄 Loading database...</div>
 <div id="status"></div>
 </div>
 
@@ -56,15 +66,21 @@ height:42px;border-radius:12px;cursor:pointer;font-weight:700;
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-const firebaseConfig={
-apiKey:"YOUR_KEY",
-databaseURL:"YOUR_DB_URL",
-projectId:"YOUR_ID",
-appId:"YOUR_APP"
+/* 🔥 Firebase 설정 (슬래시 없음) */
+const firebaseConfig = {
+apiKey: "AIzaSyDD81eW0FEgovKUjM2RwE9S-XHhEz2V2gU",
+databaseURL: "https://queenryerye-d8dac-default-rtdb.firebaseio.com",
+projectId: "queenryerye-d8dac",
+appId: "1:217840989435:web:f2391bb48fda1c49f12c5e"
 };
 
+let db=null;
+try{
 const app=initializeApp(firebaseConfig);
-const db=getDatabase(app);
+db=getDatabase(app);
+}catch(e){
+console.warn("Firebase 초기화 실패 (목록은 정상작동)");
+}
 
 const SHEET_ID='1mbBCeoTB4HhOsiTq4SHRmmLcb756TK238N3WIM-y2Tw';
 
@@ -82,29 +98,31 @@ let allSongs=[];
 let currentCat="전체";
 
 async function init(){
+try{
 allSongs=[];
 const tasks=categories.slice(1).map(async(cat)=>{
 const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${cat.gid}`;
-try{
 const res=await fetch(url);
 const csv=await res.text();
+
 return new Promise(resolve=>{
 Papa.parse(csv,{
 skipEmptyLines:true,
 complete:(result)=>{
 let lastSinger="";
 const parsed=result.data.map(row=>{
+
 let singer=(row[1]||"").toString().trim();
 let title=(row[2]||"").toString().trim();
 
-// 헤더 무시
+/* 헤더 자동 제거 */
 if(title==="제목"||singer==="가수") return null;
 
-// 병합 대응
+/* 병합셀 대응 */
 if(!singer && title) singer=lastSinger;
 if(singer) lastSinger=singer;
 
-// 제목 없는 행 무시
+/* 제목 없는 행 제거 */
 if(!title) return null;
 
 return{cat:cat.name,singer,title};
@@ -114,7 +132,6 @@ resolve(parsed);
 }
 });
 });
-}catch(e){return[];}
 });
 
 const results=await Promise.all(tasks);
@@ -122,8 +139,15 @@ allSongs=results.flat();
 
 renderNav();
 renderSongs();
+
 document.getElementById("status").innerText=
 `✅ ${allSongs.length}곡 동기화 완료`;
+
+}catch(err){
+document.getElementById("song-list").innerHTML=
+"<div style='text-align:center;padding:80px;'>❌ 시트 로딩 실패</div>";
+console.error(err);
+}
 }
 
 function renderNav(){
@@ -169,17 +193,21 @@ setTimeout(()=>btn.innerText="Copy",1000);
 };
 
 window.sd=(singer,title)=>{
+if(!db){alert("Firebase 연결 안됨");return;}
 set(ref(db,'currentSong'),{singer,title,time:Date.now()});
 };
 
 window.resetWidget=()=>{
+if(!db){alert("Firebase 연결 안됨");return;}
 set(ref(db,'currentSong'),
 {singer:"QueenRyeRye",title:"Standby Mode",time:Date.now()});
 alert("Reset Complete");
 };
 
 document.getElementById("search").oninput=renderSongs;
+
 init();
 </script>
+
 </body>
 </html>
