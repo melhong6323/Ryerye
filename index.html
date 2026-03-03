@@ -3,35 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOOP 노래 리모컨</title>
+    <title>SOOP 노래 통합 리모컨</title>
     <script src="https://unpkg.com/papaparse@5.3.2/papaparse.min.js"></script>
     <style>
         :root { --primary: #007bff; --bg: #f8f9fa; }
-        body { font-family: 'Pretendard', sans-serif; background: var(--bg); margin: 0; padding: 15px; padding-top: 145px; }
+        body { font-family: 'Pretendard', sans-serif; background: var(--bg); margin: 0; padding: 15px; padding-top: 150px; }
         
-        /* 고정 헤더 */
+        /* 고정 헤더 영역 */
         .fixed-header { position: fixed; top: 0; left: 0; right: 0; background: var(--bg); padding: 15px; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        #search { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box; outline: none; }
+        #search { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box; outline: none; transition: 0.2s; }
+        #search:focus { border-color: var(--primary); }
         
         /* 카테고리 네비게이션 */
-        .category-nav { display: flex; gap: 8px; overflow-x: auto; margin-top: 12px; padding-bottom: 5px; white-space: nowrap; -webkit-overflow-scrolling: touch; }
-        .cat-btn { padding: 8px 15px; background: white; border: 1px solid #eee; border-radius: 20px; font-size: 13px; cursor: pointer; font-weight: 600; color: #555; }
+        .category-nav { display: flex; gap: 8px; overflow-x: auto; margin-top: 12px; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
+        .cat-btn { padding: 8px 15px; background: white; border: 1px solid #eee; border-radius: 20px; font-size: 13px; cursor: pointer; white-space: nowrap; font-weight: bold; color: #555; }
         .cat-btn:hover { background: var(--primary); color: white; }
-
-        #load-status { font-size: 11px; color: #007bff; margin-top: 8px; display: block; font-weight: bold; }
-
-        /* 리스트 영역 */
-        .category-section { margin-top: 25px; }
-        .category-title { font-size: 18px; font-weight: 800; color: #333; padding-left: 10px; border-left: 5px solid var(--primary); margin: 20px 0 12px 0; }
         
-        .song-item { background: white; padding: 15px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #efefef; }
-        .song-info { display: block; font-weight: 700; margin-bottom: 12px; font-size: 1.1rem; color: #1a1a1a; }
+        #status-msg { font-size: 12px; color: #007bff; margin-top: 8px; display: block; font-weight: bold; }
+
+        /* 리스트 스타일 */
+        .category-section { margin-top: 25px; }
+        .category-title { font-size: 18px; font-weight: 800; color: #333; padding-left: 10px; border-left: 5px solid var(--primary); margin-bottom: 12px; }
+        
+        .song-item { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #efefef; }
+        .song-info { display: block; font-weight: 700; margin-bottom: 10px; font-size: 1.1rem; color: #1a1a1a; }
         
         .btn-group { display: flex; gap: 8px; }
         .btn { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; }
         .btn-copy { background: #f1f3f5; color: #495057; }
         .btn-send { background: var(--primary); color: white; }
         .btn:active { transform: scale(0.96); opacity: 0.8; }
+
+        /* 스크롤바 숨기기 */
+        .category-nav::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
@@ -39,7 +43,7 @@
     <div class="fixed-header">
         <input type="text" id="search" placeholder="가수 또는 노래 제목 검색...">
         <div class="category-nav" id="cat-nav"></div>
-        <span id="load-status">데이터 로딩 중...</span>
+        <span id="status-msg">데이터 로딩 중...</span>
     </div>
 
     <div id="song-list-container"></div>
@@ -48,7 +52,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // 파이어베이스 설정 적용
+        // 파이어베이스 설정
         const firebaseConfig = {
             apiKey: "AIzaSyDD81eW0FEgovKUjM2RwE9S-XHhEz2V2gU",
             databaseURL: "https://queenryerye-d8dac-default-rtdb.firebaseio.com/",
@@ -58,34 +62,34 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-
         const SHEET_ID = '1mbBCeoTB4HhOsiTq4SHRmmLcb756TK238N3WIM-y2Tw';
         
-        // 시트 2번~7번의 카테고리명과 gid 설정 (실제 시트의 gid와 대조해보세요)
+        // 제공해주신 모든 gid 적용
         const categories = [
-            { name: "신곡", gid: "179298586" },
-            { name: "K-POP", gid: "1397734105" },
-            { name: "J-POP", gid: "1783307567" },
-            { name: "POP", gid: "1473950275" },
-            { name: "트로트", gid: "1245056711" },
-            { name: "OST", gid: "1003463665" }
+            { name: "신곡", gid: "227086206" },
+            { name: "K-POP", gid: "706245396" },
+            { name: "J-POP", gid: "206609150" },
+            { name: "POP", gid: "1262892887" },
+            { name: "트로트", gid: "1709143109" },
+            { name: "OST", gid: "1709143109" }
         ];
 
         let allSongs = [];
 
         async function fetchAllData() {
-            const statusEl = document.getElementById('load-status');
+            const statusEl = document.getElementById('status-msg');
             const navEl = document.getElementById('cat-nav');
             allSongs = [];
+            navEl.innerHTML = '';
             
             for (const cat of categories) {
-                // 상단 버튼 생성
+                // 상단 이동 버튼 생성
                 const btn = document.createElement('button');
                 btn.className = 'cat-btn';
                 btn.innerText = cat.name;
                 btn.onclick = () => {
                     const el = document.getElementById(`section-${cat.name}`);
-                    if(el) window.scrollTo({ top: el.offsetTop - 140, behavior: 'smooth' });
+                    if(el) window.scrollTo({ top: el.offsetTop - 145, behavior: 'smooth' });
                 };
                 navEl.appendChild(btn);
 
@@ -97,8 +101,8 @@
                     
                     Papa.parse(csv, {
                         complete: (results) => {
-                            const sheetSongs = results.data.slice(1)
-                                .filter(row => row[1] && row[2])
+                            const sheetSongs = results.data.slice(1) // B(1), C(2)열 타겟팅
+                                .filter(row => row[1] && row[2]) 
                                 .map(row => ({
                                     category: cat.name,
                                     singer: row[1].replace(/"/g, '').trim(),
@@ -108,26 +112,23 @@
                             renderAll(allSongs);
                         }
                     });
-                } catch (e) { console.error(cat.name + " 로드 실패"); }
+                } catch (e) { console.error(cat.name + " 로딩 에러"); }
             }
-            statusEl.innerText = `✅ 총 ${allSongs.length}곡 불러오기 완료`;
+            statusEl.innerText = `✅ 총 ${allSongs.length}곡 로드 완료`;
         }
 
         function renderAll(songs) {
             const container = document.getElementById('song-list-container');
             container.innerHTML = '';
-
-            const grouped = songs.reduce((acc, song) => {
-                if (!acc[song.category]) acc[song.category] = [];
-                acc[song.category].push(song);
-                return acc;
-            }, {});
+            
+            // 카테고리별 그룹화
+            const grouped = songs.reduce((acc, s) => { (acc[s.category] = acc[s.category] || []).push(s); return acc; }, {});
 
             for (const catName in grouped) {
                 const section = document.createElement('div');
                 section.className = 'category-section';
                 section.id = `section-${catName}`;
-                section.innerHTML = `<div class="category-title">${catName}</div>`;
+                section.innerHTML = `<div class="category-title">${catName} (${grouped[catName].length})</div>`;
                 
                 grouped[catName].forEach(song => {
                     const fullStr = `${song.singer} - ${song.title}`;
@@ -137,7 +138,7 @@
                         <span class="song-info">${fullStr}</span>
                         <div class="btn-group">
                             <button class="btn btn-copy" onclick="copyText('${fullStr}')">📋 복사</button>
-                            <button class="btn btn-send" onclick="sendToWidget('${song.singer}', '${song.title}')">🚀 위젯전송</button>
+                            <button class="btn btn-send" onclick="sendToWidget('${song.singer}', '${song.title}')">🚀 전송</button>
                         </div>
                     `;
                     section.appendChild(item);
@@ -147,21 +148,18 @@
         }
 
         window.copyText = (text) => {
-            navigator.clipboard.writeText(text).then(() => alert("복사됨: " + text));
+            navigator.clipboard.writeText(text).then(() => alert("복사 완료!"));
         };
 
         window.sendToWidget = (singer, title) => {
-            set(ref(db, 'currentSong'), {
-                singer: singer,
-                title: title,
-                time: Date.now()
-            }).then(() => {
-                const statusEl = document.getElementById('load-status');
-                statusEl.innerText = `📡 전송됨: ${title}`;
-                setTimeout(() => statusEl.innerText = `✅ 총 ${allSongs.length}곡 로드 완료`, 2000);
+            set(ref(db, 'currentSong'), { singer, title, time: Date.now() })
+            .then(() => {
+                document.getElementById('status-msg').innerText = `📡 위젯 전송 성공: ${title}`;
+                setTimeout(() => document.getElementById('status-msg').innerText = `✅ 로드 완료`, 2000);
             });
         };
 
+        // 실시간 검색 기능
         document.getElementById('search').addEventListener('input', (e) => {
             const word = e.target.value.toLowerCase();
             const filtered = allSongs.filter(s => 
