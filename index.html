@@ -2,154 +2,95 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QueenRyeRye Remote</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+<title>QyeenRyeRye</title>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
 <style>
-body{font-family:sans-serif;background:#f8fafc;margin:0}
-.container{max-width:900px;margin:0 auto;padding:40px 20px}
-.tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
-.tab{padding:10px 18px;border:1px solid #ddd;background:#fff;border-radius:12px;cursor:pointer}
-.tab.active{background:#2563eb;color:#fff}
-.ctrl{display:flex;gap:10px;margin-bottom:20px}
-#search{flex:1;padding:12px;border-radius:12px;border:1px solid #ccc}
-.item{display:grid;grid-template-columns:100px 1fr 2fr 100px;gap:10px;background:#fff;padding:12px;margin-bottom:8px;border-radius:14px}
-.singer{color:#64748b}
-.title{font-weight:700}
-.b-sd{background:#2563eb;color:#fff;border:none;border-radius:10px}
-#status{text-align:center;margin-top:20px;color:#64748b}
+body { 
+  font-family: Arial, sans-serif; 
+  padding:20px; 
+}
+h1 { 
+  margin-bottom:20px; 
+}
+.song { 
+  padding:8px; 
+  border-bottom:1px solid #ddd; 
+}
+.singer { 
+  font-weight:bold; 
+}
+.title { 
+  margin-left:10px; 
+}
+.loading { 
+  font-size:18px; 
+}
 </style>
 </head>
 <body>
 
-<div class="container">
-<h1>QueenRyeRye</h1>
-<div class="tabs" id="tab-nav"></div>
-
-<div class="ctrl">
-<input type="text" id="search" placeholder="Search by artist or title...">
-</div>
-
-<div id="song-list">🔄 Loading...</div>
-<div id="status"></div>
-</div>
+<h1>QyeenRyeRye</h1>
+<div id="list" class="loading">Loading...</div>
 
 <script>
-const SHEET_ID='1mbBCeoTB4HhOsiTq4SHRmmLcb756TK238N3WIM-y2Tw';
 
-const categories=[
-{ name:"전체", gid:"" },
-{ name:"신곡", gid:"227086206" },
-{ name:"K-POP", gid:"706245396" },
-{ name:"J-POP", gid:"206609150" },
-{ name:"POP", gid:"1262892887" },
-{ name:"트로트", gid:"1709143109" },
-{ name:"OST", gid:"22473696" }
-];
+const url = "https://docs.google.com/spreadsheets/d/1mbBCeoTB4HhOsiTq4SHRmmLcb756TK238N3WIM-y2Tw/export?format=csv&gid=130932414";
 
-let allSongs=[];
-let currentCat="전체";
+Papa.parse(url, {
+  download: true,
+  skipEmptyLines: true,
+  complete: function(result) {
 
-async function init(){
-allSongs=[];
+    const data = result.data;
+    const list = document.getElementById("list");
+    list.innerHTML = "";
 
-const tasks=categories.slice(1).map(async(cat)=>{
-const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${cat.gid}`;
-const res=await fetch(url);
-const csv=await res.text();
+    let songs = [];
+    let currentSinger = "";
 
-return new Promise(resolve=>{
-Papa.parse(csv,{
-skipEmptyLines:true,
-complete:(result)=>{
+    for(let i=0; i<data.length; i++){
 
-let headerIndex=-1;
+      let row = data[i];
+      if(!row || row.length < 2) continue;
 
-/* 🔥 공백 제거 후 헤더 탐지 */
-result.data.forEach((row,i)=>{
-const cleaned=row.map(cell=>
-(cell||"").toString().replace(/\s/g,"").trim()
-);
+      let singer = row[0] ? row[0].trim() : "";
+      let title  = row[1] ? row[1].trim() : "";
 
-if(cleaned.includes("가수") && cleaned.includes("제목")){
-headerIndex=i;
-}
+      // 가수 셀이 비어있으면 이전 가수 유지 (병합 대응)
+      if(singer !== ""){
+        currentSinger = singer;
+      }
+
+      if(title !== ""){
+        songs.push({
+          singer: currentSinger,
+          title: title
+        });
+      }
+    }
+
+    if(songs.length === 0){
+      list.innerHTML = "No results";
+      return;
+    }
+
+    songs.forEach(song=>{
+      const div = document.createElement("div");
+      div.className = "song";
+      div.innerHTML = `
+        <span class="singer">${song.singer}</span>
+        <span class="title">${song.title}</span>
+      `;
+      list.appendChild(div);
+    });
+
+  },
+  error: function(err){
+    document.getElementById("list").innerHTML = "데이터 불러오기 실패";
+    console.error(err);
+  }
 });
 
-if(headerIndex===-1){
-resolve([]);
-return;
-}
-
-let lastSinger="";
-
-const parsed=result.data.slice(headerIndex+1).map(row=>{
-
-let singer=(row[1]||"").toString().trim();
-let title=(row[2]||"").toString().trim();
-
-if(!title) return null;
-
-if(!singer && title) singer=lastSinger;
-if(singer) lastSinger=singer;
-
-return{cat:cat.name,singer,title};
-
-}).filter(Boolean);
-
-resolve(parsed);
-}
-});
-});
-});
-
-const results=await Promise.all(tasks);
-allSongs=results.flat();
-
-renderNav();
-renderSongs();
-
-document.getElementById("status").innerText=
-`✅ ${allSongs.length}곡 로드 완료`;
-}
-
-function renderNav(){
-const nav=document.getElementById("tab-nav");
-nav.innerHTML=categories.map(c=>
-`<button class="tab ${currentCat===c.name?'active':''}"
-onclick="changeCat('${c.name}')">${c.name}</button>`
-).join('');
-}
-
-function renderSongs(){
-const query=document.getElementById("search").value.toLowerCase();
-const list=document.getElementById("song-list");
-
-const filtered=allSongs.filter(s=>
-(currentCat==="전체"||s.cat===currentCat)&&
-((s.singer||"").toLowerCase().includes(query)||
-(s.title||"").toLowerCase().includes(query))
-);
-
-list.innerHTML=filtered.map(s=>`
-<div class="item">
-<button onclick="navigator.clipboard.writeText('${s.singer} - ${s.title}')">Copy</button>
-<div class="singer">${s.singer}</div>
-<div class="title">${s.title}</div>
-<button class="b-sd">SEND</button>
-</div>
-`).join('')||"<div style='text-align:center;padding:60px;'>No results</div>";
-}
-
-window.changeCat=(name)=>{
-currentCat=name;
-renderNav();
-renderSongs();
-};
-
-document.getElementById("search").oninput=renderSongs;
-
-init();
 </script>
 </body>
 </html>
