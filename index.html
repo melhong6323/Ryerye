@@ -6,71 +6,37 @@
     <title>QueenRyeRye Remote</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        :root {
-            --primary: #2563eb; --bg: #f8fafc; --card: #ffffff;
-            --text: #0f172a; --text-l: #64748b; --soop: #0046FF; --yt: #FF0000;
-        }
+        :root { --p: #2563eb; --bg: #f8fafc; --card: #ffffff; --txt: #1e293b; --txt-l: #64748b; }
+        body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(--txt); margin: 0; }
+        .container { max-width: 900px; margin: 0 auto; padding: 40px 25px; }
+        
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .brand { font-size: 32px; font-weight: 900; margin: 0; letter-spacing: -1.5px; }
+        .links { display: flex; gap: 8px; }
+        .l-btn { padding: 8px 15px; border-radius: 10px; text-decoration: none; font-size: 13px; font-weight: 800; color: #fff; }
+        
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab { padding: 12px 18px; border: 1px solid #e2e8f0; background: #fff; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--txt-l); }
+        .tab.active { background: var(--p); color: #fff; border-color: var(--p); box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2); }
+        
+        .ctrl { display: flex; gap: 10px; margin-bottom: 30px; }
+        #search { flex: 1; padding: 14px 20px; border: 2px solid #e2e8f0; border-radius: 14px; font-size: 16px; outline: none; }
+        .btn-reset { background: #0f172a; color: #fff; border: none; padding: 0 15px; border-radius: 14px; cursor: pointer; font-size: 13px; font-weight: 700; }
 
-        body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(--text); margin: 0; }
-        .container { max-width: 850px; margin: 0 auto; padding: 50px 25px; }
-
-        /* 4-6. 상단 헤더 및 링크 */
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
-        .brand { font-size: 34px; font-weight: 900; letter-spacing: -1.5px; margin: 0; }
-        .links { display: flex; gap: 10px; }
-        .l-btn { padding: 9px 18px; border-radius: 12px; text-decoration: none; font-size: 13px; font-weight: 800; color: #fff; transition: 0.2s; }
-
-        /* 3. 탭 방식 카테고리 */
-        .tabs { display: flex; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
-        .tab { padding: 12px 20px; border: 1px solid #e2e8f0; background: #fff; border-radius: 14px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--text-l); transition: 0.2s; }
-        .tab.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.2); }
-
-        /* 8. 검색창 및 리셋 */
-        .ctrl { display: flex; gap: 12px; margin-bottom: 40px; }
-        #search { flex: 1; padding: 16px 25px; border: 2px solid #e2e8f0; border-radius: 16px; font-size: 16px; outline: none; background: #fff; }
-        #search:focus { border-color: var(--primary); }
-        .btn-reset { background: #0f172a; color: #fff; border: none; padding: 0 20px; border-radius: 16px; cursor: pointer; font-size: 13px; font-weight: 700; }
-
-        /* 7. 노래 목록 UI: [복사] [가수] [제목] [전송] */
-        .item { 
-            display: grid; grid-template-columns: 110px 1fr 1.5fr 110px; 
-            align-items: center; gap: 20px; background: var(--card); 
-            padding: 20px 30px; margin-bottom: 12px; border-radius: 20px; 
-            border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
-            transition: 0.2s;
-        }
-        .item:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04); }
-
-        .singer { color: var(--text-l); font-weight: 600; font-size: 0.95rem; }
-        .title { color: var(--text); font-weight: 800; font-size: 1.15rem; }
-
-        /* 2. 복사 버튼: [📋 Copy] */
-        .b-cp { 
-            background: #f8fafc; border: 1px solid #e2e8f0; height: 44px; 
-            border-radius: 12px; cursor: pointer; font-size: 13px; font-weight: 700;
-            display: flex; align-items: center; justify-content: center; gap: 6px;
-            color: var(--text-l); position: relative;
-        }
-        .b-cp.copied::after { 
-            content: "Copied!"; position: absolute; top: -35px; left: 50%; transform: translateX(-50%); 
-            background: #1e293b; color: #fff; font-size: 11px; padding: 5px 10px; border-radius: 8px; 
-        }
-
-        /* 2. 전송 버튼: [SEND] 영문 디자인 */
-        .b-sd { 
-            background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; 
-            border: none; padding: 12px; border-radius: 12px; font-weight: 900; 
-            font-size: 12px; letter-spacing: 1.5px; cursor: pointer; text-transform: uppercase;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); transition: 0.2s;
-        }
-        .b-sd:hover { transform: scale(1.03); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3); }
-
-        #status { text-align: center; display: block; margin-top: 30px; color: #94a3b8; font-size: 13px; font-weight: 600; }
+        .item { display: grid; grid-template-columns: 105px 1.2fr 2fr 100px; align-items: center; gap: 20px; background: #fff; padding: 18px 25px; margin-bottom: 12px; border-radius: 16px; border: 1px solid #f1f5f9; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .singer { color: var(--txt-l); font-weight: 600; font-size: 0.95rem; }
+        .title { color: #1e293b; font-weight: 800; font-size: 1.15rem; }
+        
+        .b-cp { background: #f8fafc; border: 1px solid #e2e8f0; height: 42px; border-radius: 12px; cursor: pointer; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 5px; color: var(--txt-l); position: relative; }
+        .b-cp.copied::after { content: "Copied!"; position: absolute; top: -35px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; font-size: 11px; padding: 5px 10px; border-radius: 6px; }
+        .b-sd { background: var(--p); color: #fff; border: none; padding: 10px 18px; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 12px; letter-spacing: 1px; }
+        
+        #status { text-align: center; display: block; margin-top: 20px; color: #94a3b8; font-size: 12px; font-weight: bold; }
 
         @media (max-width: 768px) {
-            .item { grid-template-columns: auto 1fr auto; padding: 15px 20px; gap: 10px; }
+            .item { grid-template-columns: auto 1fr auto; padding: 15px; gap: 10px; }
             .singer, .title { grid-column: 2; }
-            .b-sd { grid-column: 3; grid-row: 1 / 3; width: 80px; }
+            .b-sd { grid-column: 3; grid-row: 1 / 3; }
         }
     </style>
 </head>
@@ -80,28 +46,26 @@
     <header>
         <h1 class="brand">QueenRyeRye</h1>
         <div class="links">
-            <a href="https://www.sooplive.co.kr/station/eunyounglove" target="_blank" class="l-btn" style="background:var(--soop)">SOOP</a>
-            <a href="https://www.youtube.com/@queen_rye" target="_blank" class="l-btn" style="background:var(--yt)">YOUTUBE</a>
+            <a href="https://www.sooplive.co.kr/station/eunyounglove" target="_blank" class="l-btn" style="background:#0046FF">SOOP</a>
+            <a href="https://www.youtube.com/@queen_rye" target="_blank" class="l-btn" style="background:#FF0000">YOUTUBE</a>
         </div>
     </header>
 
     <div class="tabs" id="tab-nav"></div>
 
     <div class="ctrl">
-        <input type="text" id="search" placeholder="Search by artist or title...">
+        <input type="text" id="search" placeholder="가수 또는 제목 검색...">
         <button class="btn-reset" onclick="resetWidget()">RESET WIDGET 🔄</button>
     </div>
 
     <div id="song-list">Syncing database...</div>
-    <span id="status">Checking connection...</span>
+    <span id="status">Connecting...</span>
 </div>
-
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // 1. Firebase 설정 (이미지 정보 확인 완료)
     const firebaseConfig = {
         apiKey: "AIzaSyDD81eW0FEgovKUjM2RwE9S-XHhEz2V2gU",
         databaseURL: "https://queenryerye-d8dac-default-rtdb.firebaseio.com/",
@@ -113,12 +77,12 @@
     const db = getDatabase(app);
     const SHEET_ID = '1mbBCeoTB4HhOsiTq4SHRmmLcb756TK238N3WIM-y2Tw';
     
-    // GID 및 데이터 시작 행(Index) 설정
+    // GID 및 데이터 시작 행 설정
     const categories = [
         { name: "전체", gid: "" },
-        { name: "신곡", gid: "227086206", start: 4 }, // 5행부터 데이터
-        { name: "K-POP", gid: "706245396", start: 7 }, // 8행부터 데이터
-        { name: "J-POP", gid: "206609150", start: 7 },
+        { name: "신곡", gid: "227086206", start: 4 }, 
+        { name: "K-POP", gid: "706245396", start: 7 }, 
+        { name: "J-POP", gid: "206609150", start: 4 }, // J-POP도 신곡처럼 앞부분부터 훑도록 조정
         { name: "POP", gid: "1262892887", start: 7 },
         { name: "트로트", gid: "1709143109", start: 7 },
         { name: "OST", gid: "22473696", start: 7 }
@@ -128,8 +92,7 @@
     let currentCat = "전체";
 
     async function init() {
-        // 모든 시트 병렬 로드
-        const tasks = categories.slice(1).map(async (cat) => {
+        const fetchTasks = categories.slice(1).map(async (cat) => {
             const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${cat.gid}`;
             try {
                 const res = await fetch(url);
@@ -139,25 +102,21 @@
                     Papa.parse(csv, {
                         skipEmptyLines: true,
                         complete: (res) => {
-                            let lastSinger = ""; // 셀 병합 처리를 위한 변수
+                            let lastSinger = "";
                             const data = res.data.slice(cat.start).map(row => {
-                                // 가수(B열:1)가 비어있으면 이전 가수를 유지
-                                let singerCell = (row[1] || "").toString().trim();
-                                let titleCell = (row[2] || "").toString().trim();
+                                // 가수(B열)와 제목(C열)을 더 확실히 잡아내기 위한 보정
+                                let s = row[1] ? String(row[1]).trim() : "";
+                                let t = row[2] ? String(row[2]).trim() : "";
 
-                                if (singerCell !== "") {
-                                    lastSinger = singerCell.replace(/"/g, '');
-                                }
+                                // 10cm 같은 이름이 Unknown으로 안 나오게 하는 핵심 로직
+                                if (s !== "") lastSinger = s.replace(/"/g, '');
                                 
-                                // 제목이 비어있거나 '제목'인 행은 제외
-                                if (!titleCell || titleCell === "" || titleCell === "제목") return null;
+                                // 제목이 없으면 노래로 인정하지 않음
+                                if (!t || t === "제목" || t === "TITLE") return null;
 
-                                return { 
-                                    cat: cat.name, 
-                                    singer: lastSinger || "Unknown", 
-                                    title: titleCell.replace(/"/g, '') 
-                                };
+                                return { cat: cat.name, singer: lastSinger || "Unknown", title: t.replace(/"/g, '') };
                             }).filter(Boolean);
+                            console.log(`${cat.name} 로드 완료: ${data.length}곡`);
                             resolve(data);
                         }
                     });
@@ -165,14 +124,13 @@
             } catch (e) { return []; }
         });
 
-        const results = await Promise.all(tasks);
+        const results = await Promise.all(fetchTasks);
         allSongs = results.flat();
         renderNav();
         renderSongs();
         document.getElementById('status').innerText = `✅ Total ${allSongs.length} songs synced`;
     }
 
-    // UI 렌더링: 탭 방식
     function renderNav() {
         const nav = document.getElementById('tab-nav');
         nav.innerHTML = categories.map(c => `
@@ -184,7 +142,6 @@
     function renderSongs() {
         const query = document.getElementById('search').value.toLowerCase();
         const list = document.getElementById('song-list');
-        
         const filtered = allSongs.filter(s => 
             (currentCat === "전체" || s.cat === currentCat) &&
             (s.singer.toLowerCase().includes(query) || s.title.toLowerCase().includes(query))
@@ -192,14 +149,12 @@
 
         list.innerHTML = filtered.length ? filtered.map(s => `
             <div class="item">
-                <button class="b-cp" onclick="window.cp('${s.singer} - ${s.title}', this)">
-                    <span style="font-size:16px;">📋</span> Copy
-                </button>
+                <button class="b-cp" onclick="window.cp('${s.singer} - ${s.title}', this)">📋 Copy</button>
                 <div class="singer">${s.singer}</div>
                 <div class="title">${s.title}</div>
                 <button class="b-sd" onclick="window.sd('${s.singer}', '${s.title}')">SEND</button>
             </div>
-        `).join('') : '<div style="text-align:center; padding:100px; color:#94a3b8;">No data found.</div>';
+        `).join('') : '<div style="text-align:center; padding:80px; color:#94a3b8; font-weight:600;">No results found.</div>';
     }
 
     window.changeCat = (name) => { currentCat = name; renderNav(); renderSongs(); };
