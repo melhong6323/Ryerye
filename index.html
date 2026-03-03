@@ -6,46 +6,51 @@
     <title>SOOP 노래 리모컨</title>
     <script src="https://unpkg.com/papaparse@5.3.2/papaparse.min.js"></script>
     <style>
-        :root { --bg: #f8f9fa; --card: #ffffff; --primary: #007bff; --gray: #6c757d; }
-        body { font-family: 'Pretendard', sans-serif; background: var(--bg); padding: 15px; max-width: 500px; margin: 0 auto; }
-        h2 { text-align: center; color: #333; margin-bottom: 20px; }
-
-        /* 상단 검색 및 새로고침 */
-        .header-controls { display: flex; gap: 8px; position: sticky; top: 10px; z-index: 100; background: var(--bg); padding-bottom: 10px; }
-        #search { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .btn-refresh { width: 50px; background: var(--gray); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 18px; }
-
-        /* 리스트 항목 */
-        #song-list { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
-        .song-item { background: var(--card); padding: 16px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 1px solid #eee; }
-        .song-name { display: block; font-weight: bold; font-size: 1.1rem; color: #222; margin-bottom: 12px; }
+        :root { --primary: #007bff; --bg: #f8f9fa; }
+        body { font-family: 'Pretendard', sans-serif; background: var(--bg); margin: 0; padding: 15px; padding-top: 145px; }
         
-        /* 하단 버튼들 */
+        /* 고정 헤더 */
+        .fixed-header { position: fixed; top: 0; left: 0; right: 0; background: var(--bg); padding: 15px; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        #search { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; box-sizing: border-box; outline: none; }
+        
+        /* 카테고리 네비게이션 */
+        .category-nav { display: flex; gap: 8px; overflow-x: auto; margin-top: 12px; padding-bottom: 5px; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+        .cat-btn { padding: 8px 15px; background: white; border: 1px solid #eee; border-radius: 20px; font-size: 13px; cursor: pointer; font-weight: 600; color: #555; }
+        .cat-btn:hover { background: var(--primary); color: white; }
+
+        #load-status { font-size: 11px; color: #007bff; margin-top: 8px; display: block; font-weight: bold; }
+
+        /* 리스트 영역 */
+        .category-section { margin-top: 25px; }
+        .category-title { font-size: 18px; font-weight: 800; color: #333; padding-left: 10px; border-left: 5px solid var(--primary); margin: 20px 0 12px 0; }
+        
+        .song-item { background: white; padding: 15px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #efefef; }
+        .song-info { display: block; font-weight: 700; margin-bottom: 12px; font-size: 1.1rem; color: #1a1a1a; }
+        
         .btn-group { display: flex; gap: 8px; }
-        .btn { flex: 1; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.2s; }
-        .btn-copy { background: #e9ecef; color: #495057; }
+        .btn { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; }
+        .btn-copy { background: #f1f3f5; color: #495057; }
         .btn-send { background: var(--primary); color: white; }
-        .btn:active { transform: scale(0.96); opacity: 0.9; }
+        .btn:active { transform: scale(0.96); opacity: 0.8; }
     </style>
 </head>
 <body>
 
-    <h2>🎤 노래책 리모컨</h2>
-
-    <div class="header-controls">
-        <input type="text" id="search" placeholder="가수 또는 제목 검색...">
-        <button class="btn-refresh" onclick="fetchSheetData()">🔄</button>
+    <div class="fixed-header">
+        <input type="text" id="search" placeholder="가수 또는 노래 제목 검색...">
+        <div class="category-nav" id="cat-nav"></div>
+        <span id="load-status">데이터 로딩 중...</span>
     </div>
 
-    <div id="song-list">데이터를 불러오는 중...</div>
+    <div id="song-list-container"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // [주의] 아래 두 항목은 본인의 파이어베이스 설정에서 직접 복사해서 넣으세요!
+        // 파이어베이스 설정 적용
         const firebaseConfig = {
-            apiKey: "AIzaSyDD81eW0FEgovKUjM2RwE9S-XHhEz2V2gU", 
+            apiKey: "AIzaSyDD81eW0FEgovKUjM2RwE9S-XHhEz2V2gU",
             databaseURL: "https://queenryerye-d8dac-default-rtdb.firebaseio.com/",
             projectId: "queenryerye-d8dac",
             appId: "1:217840989435:web:f2391bb48fda1c49f12c5e"
@@ -55,80 +60,117 @@
         const db = getDatabase(app);
 
         const SHEET_ID = '1mbBCeoTB4HhOsiTq4SHRmmLcb756TK238N3WIM-y2Tw';
-        const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+        
+        // 시트 2번~7번의 카테고리명과 gid 설정 (실제 시트의 gid와 대조해보세요)
+        const categories = [
+            { name: "신곡", gid: "179298586" },
+            { name: "K-POP", gid: "1397734105" },
+            { name: "J-POP", gid: "1783307567" },
+            { name: "POP", gid: "1473950275" },
+            { name: "트로트", gid: "1245056711" },
+            { name: "OST", gid: "1003463665" }
+        ];
 
         let allSongs = [];
 
-        // 데이터 불러오기
-        window.fetchSheetData = async function() {
-            const listEl = document.getElementById('song-list');
-            listEl.innerHTML = "<b>새로고침 중...</b>";
+        async function fetchAllData() {
+            const statusEl = document.getElementById('load-status');
+            const navEl = document.getElementById('cat-nav');
+            allSongs = [];
+            
+            for (const cat of categories) {
+                // 상단 버튼 생성
+                const btn = document.createElement('button');
+                btn.className = 'cat-btn';
+                btn.innerText = cat.name;
+                btn.onclick = () => {
+                    const el = document.getElementById(`section-${cat.name}`);
+                    if(el) window.scrollTo({ top: el.offsetTop - 140, behavior: 'smooth' });
+                };
+                navEl.appendChild(btn);
 
-            try {
-                const res = await fetch(SHEET_URL);
-                const text = await res.text();
-
-                Papa.parse(text, {
-                    complete: (results) => {
-                        // B열(row[1]) = 가수, C열(row[2]) = 제목
-                        allSongs = results.data.slice(1)
-                            .filter(row => row[1] && row[2])
-                            .map(row => ({
-                                singer: row[1].replace(/"/g, '').trim(),
-                                title: row[2].replace(/"/g, '').trim()
-                            }));
-                        displaySongs(allSongs);
-                    }
-                });
-            } catch (e) {
-                listEl.innerHTML = "<span style='color:red'>시트 데이터를 가져오지 못했습니다.</span>";
+                const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${cat.gid}`;
+                
+                try {
+                    const res = await fetch(url);
+                    const csv = await res.text();
+                    
+                    Papa.parse(csv, {
+                        complete: (results) => {
+                            const sheetSongs = results.data.slice(1)
+                                .filter(row => row[1] && row[2])
+                                .map(row => ({
+                                    category: cat.name,
+                                    singer: row[1].replace(/"/g, '').trim(),
+                                    title: row[2].replace(/"/g, '').trim()
+                                }));
+                            allSongs = allSongs.concat(sheetSongs);
+                            renderAll(allSongs);
+                        }
+                    });
+                } catch (e) { console.error(cat.name + " 로드 실패"); }
             }
-        };
-
-        // 화면에 노래 표시
-        function displaySongs(data) {
-            const listEl = document.getElementById('song-list');
-            listEl.innerHTML = '';
-
-            data.forEach(song => {
-                const fullStr = `${song.singer} - ${song.title}`;
-                const div = document.createElement('div');
-                div.className = 'song-item';
-                div.innerHTML = `
-                    <span class="song-name">${fullStr}</span>
-                    <div class="btn-group">
-                        <button class="btn btn-copy" onclick="copyText('${fullStr}')">📋 복사</button>
-                        <button class="btn btn-send" onclick="sendToWidget('${song.singer}', '${song.title}')">🚀 전송</button>
-                    </div>
-                `;
-                listEl.appendChild(div);
-            });
+            statusEl.innerText = `✅ 총 ${allSongs.length}곡 불러오기 완료`;
         }
 
-        // 복사 기능
+        function renderAll(songs) {
+            const container = document.getElementById('song-list-container');
+            container.innerHTML = '';
+
+            const grouped = songs.reduce((acc, song) => {
+                if (!acc[song.category]) acc[song.category] = [];
+                acc[song.category].push(song);
+                return acc;
+            }, {});
+
+            for (const catName in grouped) {
+                const section = document.createElement('div');
+                section.className = 'category-section';
+                section.id = `section-${catName}`;
+                section.innerHTML = `<div class="category-title">${catName}</div>`;
+                
+                grouped[catName].forEach(song => {
+                    const fullStr = `${song.singer} - ${song.title}`;
+                    const item = document.createElement('div');
+                    item.className = 'song-item';
+                    item.innerHTML = `
+                        <span class="song-info">${fullStr}</span>
+                        <div class="btn-group">
+                            <button class="btn btn-copy" onclick="copyText('${fullStr}')">📋 복사</button>
+                            <button class="btn btn-send" onclick="sendToWidget('${song.singer}', '${song.title}')">🚀 위젯전송</button>
+                        </div>
+                    `;
+                    section.appendChild(item);
+                });
+                container.appendChild(section);
+            }
+        }
+
         window.copyText = (text) => {
-            navigator.clipboard.writeText(text).then(() => alert("복사 완료!"));
+            navigator.clipboard.writeText(text).then(() => alert("복사됨: " + text));
         };
 
-        // 위젯 전송 기능
         window.sendToWidget = (singer, title) => {
             set(ref(db, 'currentSong'), {
                 singer: singer,
                 title: title,
-                timestamp: Date.now()
-            }).then(() => console.log("전송 성공: " + title));
+                time: Date.now()
+            }).then(() => {
+                const statusEl = document.getElementById('load-status');
+                statusEl.innerText = `📡 전송됨: ${title}`;
+                setTimeout(() => statusEl.innerText = `✅ 총 ${allSongs.length}곡 로드 완료`, 2000);
+            });
         };
 
-        // 검색 기능
         document.getElementById('search').addEventListener('input', (e) => {
             const word = e.target.value.toLowerCase();
             const filtered = allSongs.filter(s => 
                 s.singer.toLowerCase().includes(word) || s.title.toLowerCase().includes(word)
             );
-            displaySongs(filtered);
+            renderAll(filtered);
         });
 
-        fetchSheetData();
+        fetchAllData();
     </script>
 </body>
 </html>
