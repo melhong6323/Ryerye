@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>노래책 리모컨</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+        .song-item { background: white; margin: 5px 0; padding: 10px; border-radius: 5px; cursor: pointer; border: 1px solid #ddd; }
+        .song-item:hover { background: #e0e0e0; }
+        #search { width: 100%; padding: 10px; margin-bottom: 20px; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+    <h2>🎤 노래책 리모컨</h2>
+    <input type="text" id="search" placeholder="가수 또는 제목 검색...">
+    <div id="list">로딩 중...</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // 1. Firebase 설정 (본인의 코드로 교체하세요)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            appId: "YOUR_APP_ID"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        const SHEET_ID = '1mbBCeoTB4HhOsiTq4SHRmmLcb756TK238N3WIM-y2Tw';
+        const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+
+        let songData = [];
+
+        // 2. 스프레드시트 데이터 불러오기
+        async function loadSheet() {
+            const response = await fetch(SHEET_URL);
+            const csvText = await response.text();
+            
+            Papa.parse(csvText, {
+                complete: (results) => {
+                    songData = results.data.filter(row => row[0]); // 빈 줄 제외
+                    renderList(songData);
+                }
+            });
+        }
+
+        function renderList(data) {
+            const listDiv = document.getElementById('list');
+            listDiv.innerHTML = '';
+            data.forEach((row, index) => {
+                // 시트 구성에 따라 row[0], row[1] 순서를 조정하세요 (예: 가수, 제목)
+                const div = document.createElement('div');
+                div.className = 'song-item';
+                div.innerText = `${row[0]} - ${row[1]}`;
+                div.onclick = () => sendToWidget(row[0], row[1]);
+                listDiv.appendChild(div);
+            });
+        }
+
+        // 3. 클릭 시 Firebase 업데이트
+        function sendToWidget(singer, title) {
+            set(ref(db, 'currentSong'), {
+                singer: singer,
+                title: title,
+                time: Date.now()
+            }).then(() => alert('전송 완료: ' + title));
+        }
+
+        // 검색 기능
+        document.getElementById('search').oninput = (e) => {
+            const val = e.target.value.toLowerCase();
+            const filtered = songData.filter(row => 
+                row[0].toLowerCase().includes(val) || row[1].toLowerCase().includes(val)
+            );
+            renderList(filtered);
+        };
+
+        loadSheet();
+    </script>
+</body>
+</html>

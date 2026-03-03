@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { background: transparent; overflow: hidden; margin: 0; color: white; text-shadow: 2px 2px 4px #000; }
+        #widget-container { 
+            display: flex; align-items: center; 
+            padding: 10px; font-size: 24px; font-weight: bold;
+            background: rgba(0,0,0,0.5); border-radius: 10px; width: fit-content;
+        }
+        #title { color: #ffeb3b; margin-right: 10px; }
+        #singer { font-size: 18px; color: #eee; }
+    </style>
+</head>
+<body>
+    <div id="widget-container">
+        <span id="title">현재 곡 없음</span>
+        <span id="singer">가수</span>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = { /* 리모컨과 동일한 설정값 입력 */ };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        onValue(ref(db, 'currentSong'), (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById('title').innerText = data.title;
+                document.getElementById('singer').innerText = data.singer;
+            }
+        });
+    </script>
+</body>
+</html>
