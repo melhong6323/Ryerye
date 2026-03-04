@@ -2,11 +2,12 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>QueenRyeRye Smart Widget</title>
+    <title>QueenRyeRye Widget</title>
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
 
         :root {
+            /* 눈이 편안한 딥 씨 & 뮤트 퍼플 테마 */
             --point: #10b981;        /* 에메랄드 그린 */
             --point-sub: #8b5cf6;    /* 뮤트 퍼플 */
             --bg-glass: rgba(2, 6, 23, 0.95);
@@ -21,6 +22,7 @@
             overflow: hidden;
         }
 
+        /* 350x85 슬림 사이즈 */
         #widget-container {
             width: 350px; height: 85px;
             background: var(--bg-glass);
@@ -38,7 +40,6 @@
 
         #widget-container.show { transform: translateX(0); opacity: 1; }
 
-        /* 정보 영역 */
         .info-group {
             flex: 1;
             display: flex; flex-direction: column;
@@ -75,7 +76,7 @@
             letter-spacing: 0.3px;
         }
 
-        /* 🎵 스마트 버튼 UI */
+        /* 컨트롤 영역 */
         .player-controls {
             display: flex;
             align-items: center;
@@ -85,15 +86,8 @@
             border-left: 1px solid rgba(255,255,255,0.1);
         }
 
-        .control-btn {
-            width: 20px; height: 20px;
-            display: flex; align-items: center; justify-content: center;
-            transition: 0.3s;
-        }
-
-        .icon-svg { fill: var(--text-sub); opacity: 0.4; width: 14px; }
+        .icon-svg { fill: var(--text-sub); opacity: 0.3; width: 14px; }
         
-        /* 메인 버튼 스타일 (재생/정지) */
         #main-icon-container {
             width: 24px; height: 24px;
             display: flex; align-items: center; justify-content: center;
@@ -104,7 +98,7 @@
             filter: drop-shadow(0 0 8px var(--point));
         }
 
-        /* 재생 중일 때 일시정지 아이콘 깜빡임 효과 */
+        /* 재생 중일 때 일시정지 아이콘 깜빡임 */
         .playing-pulse {
             animation: pulse 2s infinite;
         }
@@ -119,6 +113,7 @@
         .visualizer {
             display: flex; align-items: flex-end; gap: 3px;
             height: 25px; flex-shrink: 0;
+            /* 레이아웃 고정을 위해 visibility 사용 */
         }
 
         .bar {
@@ -142,17 +137,14 @@
     <div id="widget-container">
         <div class="info-group">
             <div class="title-wrap" id="title-wrap">
-                <div id="title">System Loading...</div>
+                <div id="title">System Booting...</div>
             </div>
-            <div id="singer">Connecting to DB</div>
+            <div id="singer">Ready to Stream</div>
         </div>
         
         <div class="player-controls">
             <div class="control-btn"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></div>
-            
-            <div id="main-icon-container">
-                </div>
-            
+            <div id="main-icon-container"></div>
             <div class="control-btn"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></div>
         </div>
 
@@ -183,7 +175,6 @@
         const iconContainer = document.getElementById('main-icon-container');
         const visualizer = document.getElementById('visualizer');
 
-        // SVG 아이콘 정의
         const playIcon = `<svg class="active-icon" viewBox="0 0 24 24" style="width:22px;"><path d="M8 5v14l11-7z"/></svg>`;
         const pauseIcon = `<svg class="active-icon playing-pulse" viewBox="0 0 24 24" style="width:20px;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
 
@@ -195,23 +186,22 @@
             titleEl.style.animation = 'none';
             
             setTimeout(() => {
-                const isStandby = data.title === "Standby Mode" || data.singer === "QueenRyeRye";
+                // 🛠️ 수정된 핵심 로직: "Standby Mode" 문자열을 정확히 판별
+                const isStandby = (data.title === "QueenRyeRye");
                 
-                titleEl.innerText = data.title || "Untitled";
-                singerEl.innerText = data.singer || "Artist";
+                titleEl.innerText = data.title || "Ready";
+                singerEl.innerText = data.singer || "퀸례례";
 
-                // 🛠️ 핵심 로직: 상태에 따른 아이콘 및 비주얼라이저 변경
                 if (isStandby) {
-                    iconContainer.innerHTML = playIcon; // 준비 모드 = 재생 버튼
-                    visualizer.style.display = 'none';   // 노래 안 나오니 막대 숨김
+                    iconContainer.innerHTML = playIcon;    // 준비 모드 -> 재생 버튼
+                    visualizer.style.visibility = 'hidden'; // 이퀄라이저 숨김
                 } else {
-                    iconContainer.innerHTML = pauseIcon; // 재생 중 = 일시정지 버튼
-                    visualizer.style.display = 'flex';   // 막대 움직임 시작
+                    iconContainer.innerHTML = pauseIcon;   // 노래 재생 -> 일시정지 버튼
+                    visualizer.style.visibility = 'visible'; // 이퀄라이저 작동
                 }
                 
                 widget.classList.add('show');
                 
-                // 마퀴 애니메이션 계산
                 setTimeout(() => {
                     const containerWidth = titleWrap.offsetWidth;
                     const textWidth = titleEl.scrollWidth;
