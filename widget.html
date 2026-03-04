@@ -2,111 +2,122 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>QueenRyeRye Widget</title>
+    <title>QueenRyeRye Visual Widget</title>
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
 
         :root {
-            /* 리모컨과 통일된 컬러 팔레트 */
             --point: #10b981;        /* 에메랄드 그린 */
             --point-sub: #8b5cf6;    /* 뮤트 퍼플 */
-            --bg-glass: rgba(2, 6, 23, 0.7); /* 반투명 딥 네이비 */
+            --bg-glass: rgba(2, 6, 23, 0.85); /* 진한 딥 네이비 글래스 */
             --text-main: #f1f5f9;
             --text-sub: #94a3b8;
         }
 
         body {
-            margin: 0; padding: 20px;
+            margin: 0; padding: 0;
             font-family: 'Pretendard', sans-serif;
             overflow: hidden;
-            background-color: transparent; /* 크로마키/소스 추가용 투명 배경 */
+            background-color: transparent; /* 투명 배경 */
         }
 
-        /* 위젯 전체 컨테이너 */
-        #widget-card {
-            display: flex; align-items: center;
-            width: fit-content; min-width: 400px; max-width: 600px;
-            height: 100px;
+        /* 350x150 사이즈의 컴팩트 위젯 */
+        #widget-container {
+            width: 350px; height: 150px;
             background: var(--bg-glass);
-            backdrop-filter: blur(15px);
-            border-left: 6px solid var(--point);
-            border-radius: 4px 30px 30px 4px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 5px solid var(--point);
+            border-radius: 15px;
+            display: flex; align-items: center;
+            padding: 0 25px;
             position: relative;
-            transform: translateX(-120%); /* 시작 시 화면 밖 */
-            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            /* 등장 애니메이션 */
+            transform: translateY(20px); opacity: 0;
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        #widget-card.show { transform: translateX(0); }
+        #widget-container.show { transform: translateY(0); opacity: 1; }
 
-        /* 좌측 'NOW PLAYING' 수직 텍스트 */
-        .side-label {
-            position: absolute; left: -30px; top: 50%;
-            transform: rotate(-90deg) translateY(-50%);
-            color: var(--point); font-size: 10px; font-weight: 900;
-            letter-spacing: 2px; text-transform: uppercase;
-            opacity: 0.6;
-        }
-
-        /* 텍스트 정보 영역 */
-        .info-area {
-            padding: 0 40px 0 25px;
-            display: flex; flex-direction: column; justify-content: center;
+        /* 텍스트 영역: 제목 위, 가수 아래 */
+        .info-group {
+            flex: 1;
+            display: flex; flex-direction: column;
+            justify-content: center;
             overflow: hidden;
         }
 
-        /* 가수명 디자인 (음악방송 스타일) */
-        #singer {
-            font-size: 14px; font-weight: 800;
-            color: var(--point-sub); margin-bottom: 4px;
-            display: flex; align-items: center; gap: 8px;
-            text-transform: uppercase; letter-spacing: 0.5px;
-        }
-        #singer::before {
-            content: ''; display: inline-block;
-            width: 8px; height: 8px; background: var(--point); border-radius: 50%;
-            box-shadow: 0 0 10px var(--point);
-        }
-
-        /* 곡 제목 디자인 */
         #title {
-            font-size: 28px; font-weight: 900;
+            font-size: 26px; font-weight: 900;
             color: var(--text-main);
+            margin-bottom: 8px;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            letter-spacing: -0.5px;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
-        /* 곡 바뀔 때 반짝이는 효과 */
-        @keyframes shine {
-            0% { left: -100%; }
-            100% { left: 100%; }
+        #singer {
+            font-size: 15px; font-weight: 700;
+            color: var(--point-sub);
+            letter-spacing: 0.5px;
         }
-        .flash-effect {
-            position: absolute; top: 0; left: -100%;
-            width: 50%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.2), transparent);
-            transform: skewX(-25deg);
-        }
-        .active-flash { animation: shine 1.2s forwards; }
 
+        /* 우측 비주얼라이저 막대 효과 */
+        .visualizer {
+            display: flex; align-items: flex-end; gap: 4px;
+            height: 40px; margin-left: 15px;
+        }
+
+        .bar {
+            width: 5px; height: 10px;
+            background: linear-gradient(to top, var(--point-sub), var(--point));
+            border-radius: 2px;
+            animation: bounce 1s ease-in-out infinite;
+        }
+
+        /* 각 막대별로 박자 다르게 */
+        .bar:nth-child(2) { animation-delay: 0.2s; }
+        .bar:nth-child(3) { animation-delay: 0.4s; }
+        .bar:nth-child(4) { animation-delay: 0.1s; }
+        .bar:nth-child(5) { animation-delay: 0.3s; }
+
+        @keyframes bounce {
+            0%, 100% { height: 10px; }
+            50% { height: 40px; }
+        }
+
+        /* 수직 장식 라인 */
+        .deco-line {
+            position: absolute; right: 0; top: 20%;
+            width: 2px; height: 60%;
+            background: linear-gradient(to bottom, transparent, var(--point), transparent);
+            opacity: 0.3;
+        }
     </style>
 </head>
 <body>
 
-    <div id="widget-card">
-        <div class="side-label">On Air</div>
-        <div class="flash-effect" id="flash"></div>
-        <div class="info-area">
-            <div id="singer">Loading...</div>
-            <div id="title">방송 대기 중</div>
+    <div id="widget-container">
+        <div class="info-group">
+            <div id="title">곡 제목 불러오는 중...</div>
+            <div id="singer">가수 이름</div>
         </div>
+        
+        <div class="visualizer">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+        </div>
+        
+        <div class="deco-line"></div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // 파이어베이스 설정
         const firebaseConfig = {
             apiKey: "AIzaSyDD81eW0FEgovKUjM2RwE9S-XHhEz2V2gU",
             databaseURL: "https://queenryerye-d8dac-default-rtdb.firebaseio.com/",
@@ -118,36 +129,23 @@
         const db = getDatabase(app);
         const songRef = ref(db, 'currentSong');
 
-        const card = document.getElementById('widget-card');
-        const singerEl = document.getElementById('singer');
+        const widget = document.getElementById('widget-container');
         const titleEl = document.getElementById('title');
-        const flash = document.getElementById('flash');
-
-        let isFirstLoad = true;
+        const singerEl = document.getElementById('singer');
 
         onValue(songRef, (snapshot) => {
             const data = snapshot.val();
             if (!data) return;
 
-            // 데이터가 바뀌면 일단 카드를 숨겼다 다시 등장시킴
-            card.classList.remove('show');
+            // 곡이 바뀌면 살짝 사라졌다가 새로운 내용으로 등장
+            widget.classList.remove('show');
             
             setTimeout(() => {
-                singerEl.innerText = data.singer || "ARTIST";
-                titleEl.innerText = data.title || "SONG TITLE";
-                
-                // 등장 애니메이션
-                card.classList.add('show');
-                
-                // 루비/에메랄드 섬광 효과
-                flash.classList.remove('active-flash');
-                void flash.offsetWidth; // 리플로우 트리거
-                flash.classList.add('active-flash');
-                
-                isFirstLoad = false;
-            }, 500);
+                titleEl.innerText = data.title || "Unknown Title";
+                singerEl.innerText = data.singer || "Unknown Artist";
+                widget.classList.add('show');
+            }, 400);
         });
-
     </script>
 </body>
 </html>
