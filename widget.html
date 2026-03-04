@@ -9,7 +9,7 @@
         :root {
             --point: #10b981;        /* 에메랄드 그린 */
             --point-sub: #8b5cf6;    /* 뮤트 퍼플 */
-            --bg-glass: rgba(2, 6, 23, 0.95); /* 가독성을 위해 살짝 더 진하게 */
+            --bg-glass: rgba(2, 6, 23, 0.95);
             --text-main: #f1f5f9;
             --text-sub: #94a3b8;
         }
@@ -21,7 +21,7 @@
             overflow: hidden;
         }
 
-        /* 슬림한 85px 높이 유지 */
+        /* 여백 없이 깔끔하게 떨어지는 85px 높이 */
         #widget-container {
             width: 350px; height: 85px;
             background: var(--bg-glass);
@@ -33,22 +33,22 @@
             padding: 0 20px;
             position: relative;
             box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            /* 등장 애니메이션 */
             transform: translateX(-30px); opacity: 0;
             transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         #widget-container.show { transform: translateX(0); opacity: 1; }
 
-        /* 텍스트 영역 */
         .info-group {
             flex: 1;
             display: flex; flex-direction: column;
             justify-content: center;
-            overflow: hidden; /* 긴 텍스트 차단 */
+            overflow: hidden;
             margin-right: 15px;
         }
 
-        /* 제목 슬라이드 컨테이너 */
+        /* 슬라이드 컨테이너 */
         .title-wrap {
             width: 100%;
             overflow: hidden;
@@ -61,16 +61,15 @@
             display: inline-block;
             font-size: 22px; font-weight: 900;
             color: var(--text-main);
-            padding-right: 50px; /* 슬라이드 시 여유 공간 */
+            padding-right: 50px;
             will-change: transform;
         }
 
-        /* 슬라이드 애니메이션 (JS에서 필요시 적용) */
         @keyframes marquee {
             0% { transform: translateX(0); }
-            15% { transform: translateX(0); } /* 시작점 대기 */
-            85% { transform: translateX(var(--move-dist)); } /* 끝점 도착 */
-            100% { transform: translateX(var(--move-dist)); } /* 끝점 대기 */
+            15% { transform: translateX(0); }
+            85% { transform: translateX(var(--move-dist)); }
+            100% { transform: translateX(var(--move-dist)); }
         }
 
         #singer {
@@ -101,33 +100,24 @@
             0%, 100% { height: 6px; }
             50% { height: 28px; }
         }
-
-        .now-playing {
-            position: absolute; top: -20px; left: 10px;
-            font-size: 10px; font-weight: 900; color: var(--point);
-            text-transform: uppercase; letter-spacing: 2px;
-        }
     </style>
 </head>
 <body>
 
-    <div style="padding-top: 30px;"> 
-        <div id="widget-container">
-            <div class="now-playing">Music On Air</div>
-            <div class="info-group">
-                <div class="title-wrap" id="title-wrap">
-                    <div id="title">연결 중...</div>
-                </div>
-                <div id="singer">Waiting for Remote</div>
+    <div id="widget-container">
+        <div class="info-group">
+            <div class="title-wrap" id="title-wrap">
+                <div id="title">연결 중...</div>
             </div>
-            
-            <div class="visualizer">
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-            </div>
+            <div id="singer">Waiting for Remote</div>
+        </div>
+        
+        <div class="visualizer">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
         </div>
     </div>
 
@@ -155,7 +145,6 @@
             const data = snapshot.val();
             if (!data) return;
 
-            // 곡 변경 시 애니메이션 초기화
             widget.classList.remove('show');
             titleEl.style.animation = 'none';
             
@@ -163,21 +152,19 @@
                 titleEl.innerText = data.title || "Untitled";
                 singerEl.innerText = data.singer || "Unknown Artist";
                 
-                // 등장 후 슬라이드 필요 여부 계산
                 widget.classList.add('show');
                 
                 setTimeout(() => {
                     const containerWidth = titleWrap.offsetWidth;
                     const textWidth = titleEl.scrollWidth;
 
-                    if (textWidth > containerWidth + 10) {
+                    if (textWidth > containerWidth + 5) {
                         const moveDist = containerWidth - textWidth;
                         titleEl.style.setProperty('--move-dist', `${moveDist}px`);
-                        // 글자 길이에 비례해 속도 조절 (글자당 약 0.2초)
                         const duration = Math.max(6, textWidth / 40);
                         titleEl.style.animation = `marquee ${duration}s linear infinite alternate`;
                     }
-                }, 1000); // 등장 애니메이션 완료 후 계산
+                }, 1000);
             }, 400);
         });
     </script>
