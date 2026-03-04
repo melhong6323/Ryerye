@@ -21,7 +21,7 @@
             overflow: hidden;
         }
 
-        /* 여백 없이 깔끔하게 떨어지는 85px 높이 */
+        /* 깔끔한 85px 높이 */
         #widget-container {
             width: 350px; height: 85px;
             background: var(--bg-glass);
@@ -33,22 +33,20 @@
             padding: 0 20px;
             position: relative;
             box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-            /* 등장 애니메이션 */
             transform: translateX(-30px); opacity: 0;
             transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         #widget-container.show { transform: translateX(0); opacity: 1; }
 
+        /* 텍스트 정보 영역 */
         .info-group {
             flex: 1;
             display: flex; flex-direction: column;
             justify-content: center;
             overflow: hidden;
-            margin-right: 15px;
         }
 
-        /* 슬라이드 컨테이너 */
         .title-wrap {
             width: 100%;
             overflow: hidden;
@@ -59,7 +57,7 @@
 
         #title {
             display: inline-block;
-            font-size: 22px; font-weight: 900;
+            font-size: 20px; font-weight: 900;
             color: var(--text-main);
             padding-right: 50px;
             will-change: transform;
@@ -73,9 +71,36 @@
         }
 
         #singer {
-            font-size: 14px; font-weight: 700;
+            font-size: 13px; font-weight: 700;
             color: var(--point-sub);
             letter-spacing: 0.3px;
+        }
+
+        /* 🎵 추가된 재생바 (Progress Bar) */
+        .playback-area {
+            width: 60px; /* 적당한 가로폭 */
+            margin: 0 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .progress-rail {
+            width: 100%; height: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #progress-fill {
+            position: absolute; left: 0; top: 0;
+            width: 0%; height: 100%;
+            background: var(--point);
+            border-radius: 2px;
+            box-shadow: 0 0 8px var(--point);
+            transition: width 0.5s ease-out; /* 부드러운 차오름 */
         }
 
         /* 비주얼라이저 */
@@ -107,11 +132,18 @@
     <div id="widget-container">
         <div class="info-group">
             <div class="title-wrap" id="title-wrap">
-                <div id="title">연결 중...</div>
+                <div id="title">Loading...</div>
             </div>
-            <div id="singer">Waiting for Remote</div>
+            <div id="singer">Connecting to Remote</div>
         </div>
         
+        <div class="playback-area">
+            <div class="progress-rail">
+                <div id="progress-fill"></div>
+            </div>
+            <div style="font-size: 8px; color: var(--text-sub); font-weight: 900; letter-spacing: 1px;">PLAYING</div>
+        </div>
+
         <div class="visualizer">
             <div class="bar"></div>
             <div class="bar"></div>
@@ -140,13 +172,19 @@
         const titleEl = document.getElementById('title');
         const singerEl = document.getElementById('singer');
         const titleWrap = document.getElementById('title-wrap');
+        const progressFill = document.getElementById('progress-fill');
+
+        let progressInterval;
 
         onValue(songRef, (snapshot) => {
             const data = snapshot.val();
             if (!data) return;
 
+            // UI 초기화 및 숨기기
             widget.classList.remove('show');
             titleEl.style.animation = 'none';
+            progressFill.style.width = '0%';
+            clearInterval(progressInterval);
             
             setTimeout(() => {
                 titleEl.innerText = data.title || "Untitled";
@@ -154,6 +192,15 @@
                 
                 widget.classList.add('show');
                 
+                // 재생바 가상 진행 로직 (예: 3분 기준)
+                let percent = 0;
+                progressInterval = setInterval(() => {
+                    percent += 0.5;
+                    progressFill.style.width = percent + '%';
+                    if (percent >= 100) clearInterval(progressInterval);
+                }, 1000); // 1초마다 차오름
+
+                // 슬라이딩 타이틀 계산
                 setTimeout(() => {
                     const containerWidth = titleWrap.offsetWidth;
                     const textWidth = titleEl.scrollWidth;
