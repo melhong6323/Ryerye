@@ -7,88 +7,185 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+
         :root {
-            --primary: #2563eb; --bg: #f8fafc; --card: #ffffff;
-            --text-main: #0f172a; --text-sub: #64748b;
+            /* 고급진 다크 네이비 테마 */
+            --bg-base: #0f172a;       /* 가장 어두운 배경 (slate 900) */
+            --bg-card: #1e293b;       /* 카드 및 사이드바 배경 (slate 800) */
+            --bg-inner: #334155;      /* 입력창 및 내부 영역 배경 (slate 700) */
+            
+            /* 포인트 컬러: 딥 루비 레드 */
+            --ruby: #c2185b;          /* 메인 포인트 (ruby 700) */
+            --ruby-light: #e91e63;    /* 하이라이트 포인트 (ruby 500) */
+            --ruby-soft: rgba(194, 24, 91, 0.1); /* 연한 루비색 */
+
+            /* 가독성 최상의 글자색 */
+            --text-main: #f1f5f9;     /* 깨끗한 흰색 (slate 50) */
+            --text-sub: #94a3b8;      /* 차분한 회색 (slate 400) */
+            --border: #334155;        /* 은은한 경계선 (slate 700) */
+            
             --soop: #0046FF; --yt: #FF0000;
         }
 
         * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
         body {
             margin: 0; font-family: 'Pretendard', sans-serif;
-            background-color: var(--bg); color: var(--text-main);
+            background-color: var(--bg-base); color: var(--text-main);
             height: 100vh; overflow: hidden; display: flex; flex-direction: column;
         }
 
-        /* Header */
-        .header { display: flex; align-items: center; justify-content: space-between; height: 80px; padding: 0 40px; flex-shrink: 0; }
-        .header h1 { font-size: 28px; font-weight: 900; margin: 0; letter-spacing: -1px; flex: 1; text-align: center; margin-left: 120px; }
-        .header-links { display: flex; gap: 10px; }
-        .link-btn { padding: 8px 16px; border-radius: 10px; text-decoration: none; font-size: 13px; font-weight: 800; color: #fff; transition: 0.2s; }
+        /* 고급스러운 Header */
+        .header {
+            display: flex; align-items: center; justify-content: space-between;
+            height: 80px; padding: 0 40px; flex-shrink: 0;
+            background-color: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+        }
+        .brand { font-size: 30px; font-weight: 900; margin: 0; letter-spacing: -1px; }
+        .links { display: flex; gap: 10px; }
+        .l-btn {
+            padding: 9px 18px; border-radius: 10px; text-decoration: none;
+            font-size: 13px; font-weight: 800; color: #fff; transition: 0.3s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
+        .l-btn:hover { transform: translateY(-2px); opacity: 0.9; }
 
-        /* Layout */
-        .container { display: flex; gap: 20px; max-width: 1600px; margin: 0 auto; padding: 0 20px 20px; height: calc(100vh - 80px); width: 100%; }
+        /* Main Layout */
+        .container {
+            display: flex; gap: 20px; max-width: 1600px; margin: 0 auto;
+            padding: 20px; height: calc(100vh - 80px); width: 100%;
+        }
+
+        /* 좌측 영역: 카테고리 & 공지사항 */
         .left-pane { flex: 0 0 320px; display: flex; flex-direction: column; gap: 15px; }
-        .category-card { background: var(--card); border-radius: 20px; padding: 15px; border: 1px solid #e2e8f0; }
-        .tab-group { display: flex; flex-wrap: wrap; gap: 6px; }
-        .tab { padding: 10px 14px; border-radius: 10px; background: #f1f5f9; color: var(--text-sub); cursor: pointer; font-size: 13px; font-weight: 600; transition: 0.2s; border:none; }
-        .tab.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2); }
+        
+        .pane-card {
+            background-color: var(--bg-card); border-radius: 20px;
+            padding: 20px; border: 1px solid var(--border);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+        }
 
-        .notice-card { flex: 1; background: #fffbeb; border-radius: 20px; padding: 20px; border: 1px solid #fde68a; overflow-y: auto; font-size: 14px; line-height: 1.7; color: #92400e; }
-        .notice-title { font-weight: 800; font-size: 12px; color: #b45309; margin-bottom: 10px; display: block; }
+        /* 3. 탭 방식 카테고리 */
+        .tab-group { display: flex; flex-wrap: wrap; gap: 8px; }
+        .tab {
+            padding: 10px 16px; border-radius: 10px; background: var(--bg-inner);
+            color: var(--text-sub); cursor: pointer; font-size: 13px;
+            font-weight: 600; transition: 0.2s; border: none; outline: none;
+        }
+        .tab:hover { background: #475569; color: var(--text-main); }
+        .tab.active { background: var(--ruby); color: white; box-shadow: 0 4px 10px rgba(194, 24, 91, 0.3); }
 
-        .right-pane { flex: 1; background: var(--card); border-radius: 24px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03); }
-        .list-header { padding: 20px; background: #fff; display: flex; gap: 12px; align-items: center; border-bottom: 1px solid #f1f5f9; }
-        #searchInput { flex: 1; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 14px; padding: 14px 20px; font-size: 15px; outline: none; }
-        .reset-btn { padding: 0 20px; height: 50px; background: #0f172a; color: #fff; border: none; border-radius: 14px; font-size: 13px; font-weight: 800; cursor: pointer; }
+        /* 공지사항 내용 */
+        .notice-card { flex: 1; background: #2a1b1e; border: 1px solid #5d3c43; color: #f9d3d9; overflow-y: auto; font-size: 14px; line-height: 1.8; }
+        .notice-title { font-weight: 800; font-size: 11px; color: #ff8ead; margin-bottom: 12px; display: block; text-transform: uppercase; letter-spacing: 1px; }
 
-        #song-list { flex: 1; overflow-y: auto; padding: 10px 20px; }
-        .song-item { display: grid; grid-template-columns: 100px 1.2fr 2fr 100px; align-items: center; gap: 15px; padding: 16px 20px; border-bottom: 1px solid #f1f5f9; transition: 0.2s; }
-        .song-item:hover { background: #eff6ff; border-radius: 15px; }
+        /* 우측 영역: 검색 & 노래목록 */
+        .right-pane {
+            flex: 1; background: var(--bg-card); border-radius: 24px;
+            border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
 
-        .singer-name { font-weight: 600; color: var(--text-sub); font-size: 14px; }
+        /* 8. 검색창 및 위젯 초기화 */
+        .list-header {
+            padding: 20px 25px; background: #fff; display: flex; gap: 12px;
+            align-items: center; border-bottom: 1px solid var(--border);
+            background-color: rgba(30, 41, 59, 0.5);
+        }
+        #searchInput {
+            flex: 1; background-color: var(--bg-inner); border: 1.5px solid var(--border);
+            border-radius: 14px; padding: 14px 22px; font-size: 15px;
+            outline: none; color: var(--text-main); transition: 0.2s;
+        }
+        #searchInput:focus { border-color: var(--ruby); background-color: #475569; }
+        #searchInput::placeholder { color: var(--text-sub); opacity: 0.7; }
+
+        .reset-btn {
+            padding: 0 20px; height: 50px; background: #0f172a; color: #fff;
+            border: 1px solid #334155; border-radius: 14px; font-size: 13px;
+            font-weight: 800; cursor: pointer; transition: 0.2s;
+        }
+        .reset-btn:hover { background: #000; border-color: var(--ruby); color: var(--ruby-light); }
+
+        /* 7. 노래 목록 UI */
+        #song-list { flex: 1; overflow-y: auto; padding: 10px 25px; }
+        .song-item {
+            display: grid; grid-template-columns: 100px 1.2fr 2fr 100px;
+            align-items: center; gap: 15px; padding: 18px 25px;
+            border-bottom: 1px solid var(--border); transition: 0.2s;
+        }
+        .song-item:hover { background-color: rgba(51, 65, 85, 0.5); border-radius: 15px; transform: scale(1.01); }
+
+        .singer-name { font-weight: 600; color: var(--text-sub); font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .song-title { font-weight: 800; color: var(--text-main); font-size: 16px; }
 
-        /* Buttons */
-        .btn-copy { background: #fff; border: 1px solid #e2e8f0; height: 40px; border-radius: 10px; cursor: pointer; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 5px; color: var(--text-sub); position: relative; }
-        .btn-copy.copied::after { content: "Copied!"; position: absolute; top: -35px; background: #333; color: #fff; font-size: 10px; padding: 4px 8px; border-radius: 5px; }
-        .btn-send { background: linear-gradient(135deg, var(--primary), #1d4ed8); color: white; border: none; height: 40px; border-radius: 10px; font-weight: 900; font-size: 12px; cursor: pointer; letter-spacing: 1px; }
+        /* 2. 버튼 디자인: Copy(아이콘+텍스트), SEND(루비그라데이션) */
+        .btn-copy {
+            background-color: var(--bg-inner); border: 1px solid var(--border); height: 40px;
+            border-radius: 10px; cursor: pointer; font-size: 12px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center; gap: 5px;
+            color: var(--text-sub); position: relative; transition: 0.2s;
+        }
+        .btn-copy:hover { border-color: var(--ruby); color: var(--ruby-light); background-color: #475569; }
+        .btn-copy.copied::after {
+            content: "Copied!"; position: absolute; top: -35px; background: #fff;
+            color: var(--bg-base); font-size: 10px; padding: 4px 8px; border-radius: 5px; font-weight: 800;
+        }
 
-        #load-status { text-align: center; padding: 15px; font-size: 12px; color: #94a3b8; }
+        .btn-send {
+            background: linear-gradient(135deg, var(--ruby), #880e4f);
+            color: white; border: none; height: 40px; border-radius: 10px;
+            font-weight: 900; font-size: 12px; cursor: pointer; letter-spacing: 1.5px;
+            text-transform: uppercase; box-shadow: 0 4px 10px rgba(194, 24, 91, 0.2); transition: 0.2s;
+        }
+        .btn-send:hover { transform: scale(1.03); box-shadow: 0 6px 15px rgba(194, 24, 91, 0.3); }
+
+        #load-status { text-align: center; padding: 15px; font-size: 12px; color: #94a3b8; font-weight: 600; }
+
+        /* 스크롤바 커스텀 */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-card); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        @media (max-width: 1000px) {
+            .container { flex-direction: column; overflow-y: auto; height: auto; }
+            .left-pane { flex: none; width: 100%; }
+            .header h1 { font-size: 24px; margin-left: 0; }
+        }
     </style>
 </head>
 <body>
 
     <header class="header">
-        <div style="width:120px;"></div>
-        <h1>QueenRyeRye <span style="color:var(--primary)">REMOTE</span></h1>
-        <div class="header-links">
-            <a href="https://www.sooplive.co.kr/station/eunyounglove" target="_blank" class="link-btn" style="background:var(--soop)">SOOP</a>
-            <a href="https://www.youtube.com/@queen_rye" target="_blank" class="link-btn" style="background:var(--yt)">YOUTUBE</a>
+        <div style="width:120px;"></div> <h1 class="brand">QueenRyeRye <span style="color:var(--ruby-light)">REMOTE</span></h1>
+        <div class="links">
+            <a href="https://www.sooplive.co.kr/station/eunyounglove" target="_blank" class="l-btn" style="background:var(--soop)">SOOP</a>
+            <a href="https://www.youtube.com/@queen_rye" target="_blank" class="l-btn" style="background:var(--yt)">YOUTUBE</a>
         </div>
     </header>
 
     <div class="container">
         <div class="left-pane">
-            <div class="category-card">
-                <span style="font-size:10px; font-weight:800; color:var(--primary); display:block; margin-bottom:10px;">CATEGORIES</span>
+            <div class="pane-card category-card">
+                <span style="font-size:10px; font-weight:800; color:var(--ruby-light); display:block; margin-bottom:12px; text-transform:uppercase; letter-spacing:1px;">CATEGORIES</span>
                 <div id="tabs" class="tab-group">
-                    <button class="tab active" onclick="changeCat('전체')">전체</button>
+                    <button id="tab-전체" class="tab active" onclick="changeCat('전체')">전체</button>
                 </div>
             </div>
-            <div class="notice-card">
-                <span class="notice-title">📋 NOTICE</span>
-                <div id="notice-content">불러오는 중...</div>
+            <div class="pane-card notice-card">
+                <span class="notice-title">📋 NOTICE / GUIDE</span>
+                <div id="notice-content">공지사항 로딩 중...</div>
             </div>
         </div>
 
         <div class="right-pane">
             <div class="list-header">
-                <input type="text" id="searchInput" placeholder="가수 또는 제목 검색...">
+                <input type="text" id="searchInput" placeholder="Search by artist or title...">
                 <button onclick="resetWidget()" class="reset-btn">WIDGET RESTART</button>
             </div>
             <div id="song-list"></div>
-            <div id="load-status">스프레드시트 동기화 중...</div>
+            <div id="load-status">데이터 연결 확인 중...</div>
         </div>
     </div>
 
@@ -96,6 +193,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+        // Firebase 및 시트 설정
         const firebaseConfig = {
             apiKey: "AIzaSyDD81eW0FEgovKUjM2RwE9S-XHhEz2V2gU",
             databaseURL: "https://queenryerye-d8dac-default-rtdb.firebaseio.com/",
@@ -107,20 +205,19 @@
         const db = getDatabase(app);
         const SHEET_ID = '1mbBCeoTB4HhOsiTq4SHRmmLcb756TK238N3WIM-y2Tw';
         
-        // 1 & 2. 업데이트된 GID 정보 및 행 설정
         const categories = [
-            { name: "신곡", gid: "227086206", start: 4 }, // 5행 (헤더는 4행)
-            { name: "K-POP", gid: "706245396", start: 7 }, // 8행 (헤더는 7행)
-            { name: "J-POP", gid: "206609150", start: 7 },
-            { name: "POP", gid: "1262892887", start: 7 },
-            { name: "트로트", gid: "1709143109", start: 7 },
-            { name: "OST", gid: "22473696", start: 7 }
+            { name: "신곡", gid: "227086206" },
+            { name: "K-POP", gid: "706245396" },
+            { name: "J-POP", gid: "206609150" },
+            { name: "POP", gid: "1262892887" },
+            { name: "트로트", gid: "1709143109" },
+            { name: "OST", gid: "22473696" }
         ];
 
         let allSongs = [];
         let currentCat = "전체";
 
-        // 공지사항 로드 (GID 130932414 적용)
+        // 공지사항 (GID 130932414 적용)
         async function loadNotice() {
             const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=130932414`;
             try {
@@ -129,7 +226,7 @@
                 Papa.parse(csv, {
                     complete: (results) => {
                         const content = results.data.map(row => row[0]).filter(Boolean).join('<br>');
-                        document.getElementById('notice-content').innerHTML = content;
+                        document.getElementById('notice-content').innerHTML = content || "공지사항이 비어있습니다.";
                     }
                 });
             } catch (e) { document.getElementById('notice-content').innerText = "공지사항 로드 실패"; }
@@ -140,66 +237,83 @@
             const tabContainer = document.getElementById('tabs');
             allSongs = [];
 
+            // 카테고리 탭 생성
             categories.forEach(cat => {
                 const btn = document.createElement('button');
+                btn.id = `tab-${cat.name}`;
                 btn.className = 'tab';
                 btn.innerText = cat.name;
                 btn.onclick = () => changeCat(cat.name);
                 tabContainer.appendChild(btn);
             });
 
-            const tasks = categories.map(async (cat) => {
+            // 데이터 분석 및 로딩
+            for (const cat of categories) {
                 const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${cat.gid}`;
-                const res = await fetch(url);
-                const csv = await res.text();
-                
-                return new Promise(resolve => {
-                    Papa.parse(csv, {
-                        complete: (results) => {
-                            // 2. 헤더 행에서 '가수'와 '제목' 열의 인덱스 찾기
-                            let singerIdx = 1, titleIdx = 2; // 기본값
-                            const headerRow = results.data[cat.start - 1]; // 헤더는 데이터 시작 전 줄
-                            
-                            if (headerRow) {
-                                headerRow.forEach((cell, idx) => {
-                                    if (cell.includes("가수")) singerIdx = idx;
-                                    if (cell.includes("제목")) titleIdx = idx;
-                                });
-                            }
+                try {
+                    const res = await fetch(url);
+                    const csv = await res.text();
+                    
+                    await new Promise(resolve => {
+                        Papa.parse(csv, {
+                            complete: (results) => {
+                                let singerIdx = -1, titleIdx = -1;
+                                let headerFound = false;
+                                let lastSinger = ""; // 셀 병합 대응
+                                const sheetSongs = [];
 
-                            // 3. 셀 병합 인식 및 데이터 추출 로직
-                            let lastSinger = ""; 
-                            const data = results.data.slice(cat.start).map(row => {
-                                let singer = (row[singerIdx] || "").toString().trim();
-                                let title = (row[titleIdx] || "").toString().trim();
+                                // 시트의 모든 행을 분석
+                                for (let i = 0; i < results.data.length; i++) {
+                                    const row = results.data[i];
+                                    
+                                    // 1. '가수'와 '제목' 열을 찾아 데이터 시작점 인식
+                                    if (!headerFound) {
+                                        const rowStr = row.join(" ");
+                                        if (rowStr.includes("가수") && rowStr.includes("제목")) {
+                                            row.forEach((cell, idx) => {
+                                                if (cell.includes("가수")) singerIdx = idx;
+                                                if (cell.includes("제목")) titleIdx = idx;
+                                            });
+                                            if (singerIdx !== -1 && titleIdx !== -1) {
+                                                headerFound = true;
+                                            }
+                                        }
+                                        continue; // 헤더 찾기 전 줄은 건너뜀
+                                    }
 
-                                if (singer !== "") {
-                                    lastSinger = singer.replace(/"/g, '');
+                                    // 데이터 추출
+                                    const s = (row[singerIdx] || "").toString().trim();
+                                    const t = (row[titleIdx] || "").toString().trim();
+
+                                    // 2. 셀 병합 인식: 가수가 있으면 갱신, 없으면 이전 가수 유지
+                                    if (s !== "") {
+                                        lastSinger = s.replace(/"/g, '');
+                                    }
+                                    
+                                    // 제목이 있는 행만 곡으로 인정
+                                    if (t && t !== "" && t !== "제목") {
+                                        sheetSongs.push({
+                                            cat: cat.name,
+                                            singer: lastSinger || "가수 미상",
+                                            title: t.replace(/"/g, '')
+                                        });
+                                    }
                                 }
-                                
-                                if (!title || title === "" || title === "제목") return null;
-
-                                return { 
-                                    cat: cat.name, 
-                                    singer: lastSinger || "Unknown", 
-                                    title: title.replace(/"/g, '') 
-                                };
-                            }).filter(Boolean);
-                            resolve(data);
-                        }
+                                allSongs = allSongs.concat(sheetSongs);
+                                resolve();
+                            }
+                        });
                     });
-                });
-            });
-
-            const results = await Promise.all(tasks);
-            allSongs = results.flat();
+                } catch (e) { console.error(`${cat.name} 로드 에러`); }
+            }
             renderSongs();
             statusEl.innerText = `✅ Total ${allSongs.length} songs synced`;
         }
 
         window.changeCat = (name) => {
             currentCat = name;
-            document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.innerText === name));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(`tab-${name}`).classList.add('active');
             renderSongs();
         };
 
@@ -240,6 +354,7 @@
 
         document.getElementById('searchInput').oninput = renderSongs;
 
+        // 실행
         loadNotice();
         init();
     </script>
