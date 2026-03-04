@@ -2,14 +2,14 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>QueenRyeRye Visual Widget</title>
+    <title>QueenRyeRye Widget</title>
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
 
         :root {
             --point: #10b981;        /* 에메랄드 그린 */
             --point-sub: #8b5cf6;    /* 뮤트 퍼플 */
-            --bg-glass: rgba(2, 6, 23, 0.85); /* 진한 딥 네이비 글래스 */
+            --bg-glass: rgba(2, 6, 23, 0.95); /* 가독성을 위해 살짝 더 진하게 */
             --text-main: #f1f5f9;
             --text-sub: #94a3b8;
         }
@@ -17,101 +17,118 @@
         body {
             margin: 0; padding: 0;
             font-family: 'Pretendard', sans-serif;
+            background-color: transparent;
             overflow: hidden;
-            background-color: transparent; /* 투명 배경 */
         }
 
-        /* 350x150 사이즈의 컴팩트 위젯 */
+        /* 슬림한 85px 높이 유지 */
         #widget-container {
-            width: 350px; height: 150px;
+            width: 350px; height: 85px;
             background: var(--bg-glass);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-left: 5px solid var(--point);
-            border-radius: 15px;
+            border-radius: 12px;
             display: flex; align-items: center;
-            padding: 0 25px;
+            padding: 0 20px;
             position: relative;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            /* 등장 애니메이션 */
-            transform: translateY(20px); opacity: 0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            transform: translateX(-30px); opacity: 0;
             transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        #widget-container.show { transform: translateY(0); opacity: 1; }
+        #widget-container.show { transform: translateX(0); opacity: 1; }
 
-        /* 텍스트 영역: 제목 위, 가수 아래 */
+        /* 텍스트 영역 */
         .info-group {
             flex: 1;
             display: flex; flex-direction: column;
             justify-content: center;
+            overflow: hidden; /* 긴 텍스트 차단 */
+            margin-right: 15px;
+        }
+
+        /* 제목 슬라이드 컨테이너 */
+        .title-wrap {
+            width: 100%;
             overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+            margin-bottom: 2px;
         }
 
         #title {
-            font-size: 26px; font-weight: 900;
+            display: inline-block;
+            font-size: 22px; font-weight: 900;
             color: var(--text-main);
-            margin-bottom: 8px;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            padding-right: 50px; /* 슬라이드 시 여유 공간 */
+            will-change: transform;
+        }
+
+        /* 슬라이드 애니메이션 (JS에서 필요시 적용) */
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            15% { transform: translateX(0); } /* 시작점 대기 */
+            85% { transform: translateX(var(--move-dist)); } /* 끝점 도착 */
+            100% { transform: translateX(var(--move-dist)); } /* 끝점 대기 */
         }
 
         #singer {
-            font-size: 15px; font-weight: 700;
+            font-size: 14px; font-weight: 700;
             color: var(--point-sub);
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
 
-        /* 우측 비주얼라이저 막대 효과 */
+        /* 비주얼라이저 */
         .visualizer {
-            display: flex; align-items: flex-end; gap: 4px;
-            height: 40px; margin-left: 15px;
+            display: flex; align-items: flex-end; gap: 3px;
+            height: 28px; flex-shrink: 0;
         }
 
         .bar {
-            width: 5px; height: 10px;
+            width: 4px; height: 6px;
             background: linear-gradient(to top, var(--point-sub), var(--point));
-            border-radius: 2px;
-            animation: bounce 1s ease-in-out infinite;
+            border-radius: 1px;
+            animation: bounce 0.8s ease-in-out infinite;
         }
 
-        /* 각 막대별로 박자 다르게 */
-        .bar:nth-child(2) { animation-delay: 0.2s; }
-        .bar:nth-child(3) { animation-delay: 0.4s; }
-        .bar:nth-child(4) { animation-delay: 0.1s; }
-        .bar:nth-child(5) { animation-delay: 0.3s; }
+        .bar:nth-child(2) { animation-delay: 0.15s; }
+        .bar:nth-child(3) { animation-delay: 0.3s; }
+        .bar:nth-child(4) { animation-delay: 0.45s; }
+        .bar:nth-child(5) { animation-delay: 0.1s; }
 
         @keyframes bounce {
-            0%, 100% { height: 10px; }
-            50% { height: 40px; }
+            0%, 100% { height: 6px; }
+            50% { height: 28px; }
         }
 
-        /* 수직 장식 라인 */
-        .deco-line {
-            position: absolute; right: 0; top: 20%;
-            width: 2px; height: 60%;
-            background: linear-gradient(to bottom, transparent, var(--point), transparent);
-            opacity: 0.3;
+        .now-playing {
+            position: absolute; top: -20px; left: 10px;
+            font-size: 10px; font-weight: 900; color: var(--point);
+            text-transform: uppercase; letter-spacing: 2px;
         }
     </style>
 </head>
 <body>
 
-    <div id="widget-container">
-        <div class="info-group">
-            <div id="title">곡 제목 불러오는 중...</div>
-            <div id="singer">가수 이름</div>
+    <div style="padding-top: 30px;"> 
+        <div id="widget-container">
+            <div class="now-playing">Music On Air</div>
+            <div class="info-group">
+                <div class="title-wrap" id="title-wrap">
+                    <div id="title">연결 중...</div>
+                </div>
+                <div id="singer">Waiting for Remote</div>
+            </div>
+            
+            <div class="visualizer">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+            </div>
         </div>
-        
-        <div class="visualizer">
-            <div class="bar"></div>
-            <div class="bar"></div>
-            <div class="bar"></div>
-            <div class="bar"></div>
-            <div class="bar"></div>
-        </div>
-        
-        <div class="deco-line"></div>
     </div>
 
     <script type="module">
@@ -132,18 +149,35 @@
         const widget = document.getElementById('widget-container');
         const titleEl = document.getElementById('title');
         const singerEl = document.getElementById('singer');
+        const titleWrap = document.getElementById('title-wrap');
 
         onValue(songRef, (snapshot) => {
             const data = snapshot.val();
             if (!data) return;
 
-            // 곡이 바뀌면 살짝 사라졌다가 새로운 내용으로 등장
+            // 곡 변경 시 애니메이션 초기화
             widget.classList.remove('show');
+            titleEl.style.animation = 'none';
             
             setTimeout(() => {
-                titleEl.innerText = data.title || "Unknown Title";
+                titleEl.innerText = data.title || "Untitled";
                 singerEl.innerText = data.singer || "Unknown Artist";
+                
+                // 등장 후 슬라이드 필요 여부 계산
                 widget.classList.add('show');
+                
+                setTimeout(() => {
+                    const containerWidth = titleWrap.offsetWidth;
+                    const textWidth = titleEl.scrollWidth;
+
+                    if (textWidth > containerWidth + 10) {
+                        const moveDist = containerWidth - textWidth;
+                        titleEl.style.setProperty('--move-dist', `${moveDist}px`);
+                        // 글자 길이에 비례해 속도 조절 (글자당 약 0.2초)
+                        const duration = Math.max(6, textWidth / 40);
+                        titleEl.style.animation = `marquee ${duration}s linear infinite alternate`;
+                    }
+                }, 1000); // 등장 애니메이션 완료 후 계산
             }, 400);
         });
     </script>
