@@ -3,21 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QueenRyeRye</title>
+    <title>QueenRyeRye Remote</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
 
         :root {
-            /* 트렌디한 로즈 레드 & 미드나잇 그레이 */
-            --bg-deep: #0f111a;      /* 베이스 배경 */
-            --bg-card: #1a1d29;      /* 섹션 카드 배경 */
-            --bg-inner: #24283b;     /* 내부 버튼/입력창 배경 */
-            --point: #fb7185;        /* 연하고 트렌디한 로즈 레드 (Rose 400) */
-            --point-soft: #fda4af;   /* 더 연한 핑크 레드 */
+            /* 럭셔리 다크 & 루비 레드 팔레트 */
+            --bg-deep: #0a0b10;      /* 더 깊어진 블랙 배경 */
+            --bg-card: #161821;      /* 카드형 섹션 배경 */
+            --bg-inner: #1f222e;     /* 내부 요소 배경 */
+            
+            /* 이미지에서 추출한 루비 레드 포인트 */
+            --point: #ff124f;        /* 선명하고 강렬한 루비 레드 */
+            --point-hover: #ff4d7d;  /* 하이라이트 레드 */
+            --point-alpha: rgba(255, 18, 79, 0.1);
+            
             --text-main: #f8fafc;    /* 메인 텍스트 */
             --text-sub: #94a3b8;     /* 보조 텍스트 */
-            --border: rgba(255, 255, 255, 0.08);
+            --border: rgba(255, 255, 255, 0.06);
             --soop: #0046FF; --yt: #FF0000;
         }
 
@@ -28,101 +32,116 @@
             height: 100vh; overflow: hidden; display: flex; flex-direction: column;
         }
 
-        /* 헤더 디자인 */
+        /* 1. 상단 헤더: 루비 포인트 적용 */
         .header {
             display: flex; align-items: center; justify-content: space-between;
-            height: 70px; padding: 0 30px; flex-shrink: 0;
+            height: 70px; padding: 0 40px; flex-shrink: 0;
             background: var(--bg-card); border-bottom: 1px solid var(--border);
         }
-        .header h1 { font-size: 20px; font-weight: 800; margin: 0; letter-spacing: 1px; }
-        .header h1 span { color: var(--point); }
-        .links { display: flex; gap: 10px; }
-        .l-btn { padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 11px; font-weight: 800; color: #fff; transition: 0.3s; }
+        .header h1 { font-size: 22px; font-weight: 900; margin: 0; letter-spacing: 1px; }
+        .header h1 span { color: var(--point); text-shadow: 0 0 15px var(--point-alpha); }
+        .links { display: flex; gap: 12px; }
+        .l-btn { padding: 9px 18px; border-radius: 10px; text-decoration: none; font-size: 11px; font-weight: 800; color: #fff; transition: 0.3s; }
 
-        /* 메인 레이아웃 */
+        /* 2. 메인 컨테이너 레이아웃 */
         .container {
             display: flex; gap: 20px; max-width: 1600px; margin: 0 auto;
-            padding: 20px; height: calc(100vh - 70px); width: 100%;
+            padding: 25px; height: calc(100vh - 70px); width: 100%;
         }
 
-        /* 좌측: 카테고리 & 공지 */
-        .left-pane { flex: 0 0 320px; display: flex; flex-direction: column; gap: 15px; }
-        
-        .pane-card { background: var(--bg-card); border-radius: 18px; padding: 20px; border: 1px solid var(--border); }
-        
-        .tab-group { display: flex; flex-wrap: wrap; gap: 6px; }
+        /* 좌측 패널: 카테고리 + 공지사항 */
+        .left-pane { flex: 0 0 340px; display: flex; flex-direction: column; gap: 20px; height: 100%; }
+        .pane-card { background: var(--bg-card); border-radius: 20px; padding: 24px; border: 1px solid var(--border); }
+
+        /* 카테고리 탭 */
+        .tab-group { display: flex; flex-wrap: wrap; gap: 8px; }
         .tab {
-            padding: 9px 14px; border-radius: 10px; background: var(--bg-inner);
-            color: var(--text-sub); cursor: pointer; font-size: 12px;
-            font-weight: 600; transition: 0.2s; border: none;
+            padding: 10px 16px; border-radius: 12px; background: var(--bg-inner);
+            color: var(--text-sub); cursor: pointer; font-size: 13px;
+            font-weight: 700; transition: 0.2s; border: 1px solid transparent;
         }
-        .tab.active { background: var(--point); color: white; box-shadow: 0 4px 12px rgba(251, 113, 133, 0.3); }
+        .tab.active { background: var(--point-alpha); color: var(--point); border: 1px solid var(--point); box-shadow: 0 0 15px var(--point-alpha); }
 
-        /* 공지사항 UI 리팩토링 */
+        /* 공지사항 UI: 깔끔한 정렬 */
         .notice-box {
-            flex: 1; background: var(--bg-card); display: flex; flex-direction: column;
-            border-left: 4px solid var(--point); padding: 22px; overflow-y: auto;
+            flex: 1; display: flex; flex-direction: column;
+            background: var(--bg-card); border-radius: 20px; overflow: hidden;
         }
-        .notice-header { color: var(--point); font-size: 10px; font-weight: 900; letter-spacing: 2px; margin-bottom: 20px; text-transform: uppercase; }
-        .notice-list { list-style: none; padding: 0; margin: 0; }
+        .notice-header { 
+            background: var(--point-alpha); padding: 12px 24px; 
+            color: var(--point); font-size: 11px; font-weight: 900; 
+            letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid var(--border);
+        }
+        .notice-list { list-style: none; padding: 24px; margin: 0; overflow-y: auto; }
         .notice-item { 
-            display: flex; gap: 12px; margin-bottom: 16px; 
-            font-size: 13.5px; line-height: 1.5; color: #cbd5e1; 
+            display: flex; gap: 14px; margin-bottom: 20px; 
+            font-size: 14px; line-height: 1.6; color: #cbd5e1; align-items: flex-start;
         }
-        .notice-num { color: var(--point); font-weight: 900; font-size: 14px; }
-        .notice-hl { color: var(--point-soft); font-weight: 700; border-bottom: 1px solid rgba(253, 164, 175, 0.3); }
+        .notice-num { 
+            color: var(--point); font-weight: 900; font-size: 13px; 
+            background: var(--bg-inner); width: 24px; height: 24px; 
+            display: flex; align-items: center; justify-content: center; 
+            border-radius: 6px; flex-shrink: 0;
+        }
+        .notice-hl { color: var(--point); font-weight: 800; }
 
-        /* 우측: 검색 & 노래목록 */
+        /* 3. 우측 패널: 검색 + 리스트 */
         .right-pane {
-            flex: 1; background: var(--bg-card); border-radius: 20px;
+            flex: 1; background: var(--bg-card); border-radius: 24px;
             border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden;
         }
 
         .list-header {
-            padding: 15px 25px; display: flex; gap: 12px; align-items: center;
-            background: rgba(0,0,0,0.1); border-bottom: 1px solid var(--border);
+            padding: 20px 30px; display: flex; gap: 15px; align-items: center;
+            background: rgba(0,0,0,0.15); border-bottom: 1px solid var(--border);
         }
         #searchInput {
             flex: 1; background: var(--bg-inner); border: 1px solid var(--border);
-            border-radius: 12px; padding: 12px 20px; font-size: 14px; color: white; outline: none;
+            border-radius: 14px; padding: 15px 25px; font-size: 15px; color: white; outline: none; transition: 0.3s;
         }
-        #searchInput:focus { border-color: var(--point); }
+        #searchInput:focus { border-color: var(--point); box-shadow: 0 0 15px var(--point-alpha); }
+        
         .reset-btn {
-            background: transparent; color: var(--text-sub); border: 1px solid var(--border);
-            padding: 0 16px; height: 42px; border-radius: 10px; font-size: 11px; font-weight: 700; cursor: pointer;
+            background: var(--bg-inner); color: var(--point); border: 1px solid var(--point);
+            padding: 0 20px; height: 48px; border-radius: 14px; font-size: 12px; font-weight: 800; cursor: pointer; transition: 0.3s;
         }
-        .reset-btn:hover { border-color: var(--point); color: var(--point); }
+        .reset-btn:hover { background: var(--point); color: white; }
 
-        /* 노래 목록 아이템 UI */
-        #song-list { flex: 1; overflow-y: auto; padding: 10px 15px; }
+        /* 노래 목록 아이템 */
+        #song-list { flex: 1; overflow-y: auto; padding: 15px 20px; }
         .song-row {
-            display: grid; grid-template-columns: 90px 1.2fr 2fr 90px;
-            align-items: center; gap: 15px; padding: 12px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            display: grid; grid-template-columns: 100px 1.2fr 2fr 100px;
+            align-items: center; gap: 20px; padding: 16px 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03); transition: 0.2s;
         }
-        .song-row:hover { background: rgba(255, 255, 255, 0.02); border-radius: 12px; }
+        .song-row:hover { background: rgba(255, 255, 255, 0.02); border-radius: 16px; }
 
-        .s-singer { font-weight: 600; color: var(--text-sub); font-size: 13px; }
-        .s-title { font-weight: 700; color: var(--text-main); font-size: 14.5px; }
+        .s-singer { font-weight: 600; color: var(--text-sub); font-size: 14px; }
+        .s-title { font-weight: 800; color: var(--text-main); font-size: 16px; }
 
-        /* 버튼 디자인 */
+        /* 복사/전송 버튼 */
         .btn-cp {
-            background: var(--bg-inner); border: 1px solid var(--border); height: 36px;
-            border-radius: 8px; cursor: pointer; color: var(--text-sub); font-size: 11px;
-            font-weight: 700; position: relative; display: flex; align-items: center; justify-content: center; gap: 4px;
+            background: var(--bg-inner); border: 1px solid var(--border); height: 40px;
+            border-radius: 11px; cursor: pointer; color: var(--text-sub); font-size: 12px;
+            font-weight: 700; position: relative; display: flex; align-items: center; justify-content: center; gap: 6px;
         }
         .btn-cp.copied::after {
-            content: "Copied"; position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
-            background: var(--point); color: white; font-size: 10px; padding: 3px 8px; border-radius: 4px;
+            content: "Copied"; position: absolute; top: -35px; left: 50%; transform: translateX(-50%);
+            background: var(--point); color: white; font-size: 10px; padding: 4px 10px; border-radius: 6px;
         }
 
         .btn-sd {
-            background: var(--point); color: white; border: none; height: 36px; border-radius: 8px;
-            font-weight: 800; font-size: 11px; cursor: pointer; letter-spacing: 0.5px;
+            background: var(--point); color: white; border: none; height: 40px; border-radius: 11px;
+            font-weight: 900; font-size: 12px; cursor: pointer; letter-spacing: 1px; transition: 0.2s;
         }
-        .btn-sd:hover { filter: brightness(1.1); }
+        .btn-sd:hover { filter: brightness(1.2); transform: translateY(-1px); }
 
-        #load-info { text-align: center; padding: 12px; font-size: 11px; color: var(--text-sub); border-top: 1px solid var(--border); }
+        #load-info { text-align: center; padding: 15px; font-size: 12px; color: var(--text-sub); border-top: 1px solid var(--border); font-weight: 600; }
+        
+        /* 스크롤바 커스텀 */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--point); }
     </style>
 </head>
 <body>
@@ -138,14 +157,14 @@
     <div class="container">
         <div class="left-pane">
             <div class="pane-card">
-                <span style="font-size:9px; font-weight:900; color:var(--point); display:block; margin-bottom:10px; letter-spacing:1px;">CATEGORIES</span>
+                <span style="font-size:10px; font-weight:900; color:var(--point); display:block; margin-bottom:15px; letter-spacing:1px; text-transform:uppercase;">Categories</span>
                 <div id="tabs" class="tab-group">
                     <button id="tab-전체" class="tab active" onclick="changeCat('전체')">전체</button>
                 </div>
             </div>
 
-            <div class="pane-card notice-box">
-                <span class="notice-header">Broadcast Guide</span>
+            <div class="notice-box pane-card" style="padding:0;">
+                <div class="notice-header">Notice & Guide</div>
                 <div class="notice-list">
                     <div class="notice-item"><span class="notice-num">01</span><span>목 상태에 따라 순서가 나중으로 밀릴 수도 있습니다.</span></div>
                     <div class="notice-item"><span class="notice-num">02</span><span>노래 중에는 채팅 확인이 어려우니 <span class="notice-hl">끝난 후 채팅</span> 부탁드려요.</span></div>
@@ -153,8 +172,8 @@
                     <div class="notice-item"><span class="notice-num">04</span><span>영어 비중이 높은 곡은 <span class="notice-hl">노래책 확인</span> 후 신청 부탁드립니다.</span></div>
                     <div class="notice-item"><span class="notice-num">05</span><span>일반 신청 : 50개 / 미션 3곡 : 100개</span></div>
                     <div class="notice-item"><span class="notice-num">06</span><span>연습곡 <span class="notice-hl">한국곡 2000 / 외국곡 2500</span> (디코 확인)</span></div>
+                    <div style="margin-top:10px; padding-top:20px; border-top:1px solid var(--border); text-align:center; color:var(--point); font-weight:800; font-size:12px;">※ 휴방 공지는 팬심/디코 참조 ※</div>
                 </div>
-                <div style="margin-top:auto; padding-top:20px; border-top:1px solid var(--border); text-align:center; color:var(--point); font-weight:800; font-size:11px;">※ 휴방 공지는 팬심/디코 참조 ※</div>
             </div>
         </div>
 
@@ -207,7 +226,6 @@
                 tabContainer.appendChild(btn);
             });
 
-            // 완전 자동 행/열 탐색 로직
             for (const cat of categories) {
                 const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${cat.gid}`;
                 try {
@@ -232,7 +250,7 @@
                                     }
                                     const s = (row[singerIdx] || "").toString().trim();
                                     const t = (row[titleIdx] || "").toString().trim();
-                                    if (s !== "") lastSinger = s.replace(/"/g, ''); // 셀 병합 대응
+                                    if (s !== "") lastSinger = s.replace(/"/g, '');
                                     if (t && t !== "" && t !== "제목" && t !== "TITLE") {
                                         allSongs.push({ cat: cat.name, singer: lastSinger || "-", title: t.replace(/"/g, '') });
                                     }
@@ -244,7 +262,7 @@
                 } catch (e) { console.error(`${cat.name} Load Error`); }
             }
             renderSongs();
-            statusEl.innerText = `DATABASE CONNECTED : ${allSongs.length} TRACKS`;
+            statusEl.innerText = `SINGER READY : ${allSongs.length} TRACKS LOADED`;
         }
 
         window.changeCat = (name) => {
@@ -294,4 +312,3 @@
     </script>
 </body>
 </html>
-
