@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>QueenRyeRye Player Widget</title>
+    <title>QueenRyeRye Smart Widget</title>
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
 
@@ -21,7 +21,6 @@
             overflow: hidden;
         }
 
-        /* 슬림 & 트렌디한 85px 높이 */
         #widget-container {
             width: 350px; height: 85px;
             background: var(--bg-glass);
@@ -39,7 +38,7 @@
 
         #widget-container.show { transform: translateX(0); opacity: 1; }
 
-        /* 곡 정보 영역 */
+        /* 정보 영역 */
         .info-group {
             flex: 1;
             display: flex; flex-direction: column;
@@ -57,7 +56,7 @@
 
         #title {
             display: inline-block;
-            font-size: 20px; font-weight: 900;
+            font-size: 19px; font-weight: 900;
             color: var(--text-main);
             padding-right: 50px;
             will-change: transform;
@@ -76,7 +75,7 @@
             letter-spacing: 0.3px;
         }
 
-        /* 🎵 플레이어 컨트롤 버튼 UI */
+        /* 🎵 스마트 버튼 UI */
         .player-controls {
             display: flex;
             align-items: center;
@@ -86,24 +85,34 @@
             border-left: 1px solid rgba(255,255,255,0.1);
         }
 
-        .icon {
-            fill: var(--text-sub);
-            width: 14px; height: 14px;
-            opacity: 0.5;
+        .control-btn {
+            width: 20px; height: 20px;
+            display: flex; align-items: center; justify-content: center;
+            transition: 0.3s;
         }
 
-        .play-pause {
+        .icon-svg { fill: var(--text-sub); opacity: 0.4; width: 14px; }
+        
+        /* 메인 버튼 스타일 (재생/정지) */
+        #main-icon-container {
+            width: 24px; height: 24px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .active-icon {
             fill: var(--point);
-            width: 20px; height: 20px;
-            opacity: 1;
-            filter: drop-shadow(0 0 5px var(--point));
+            filter: drop-shadow(0 0 8px var(--point));
+        }
+
+        /* 재생 중일 때 일시정지 아이콘 깜빡임 효과 */
+        .playing-pulse {
             animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
-            0% { opacity: 0.7; transform: scale(1); }
+            0% { opacity: 0.6; transform: scale(1); }
             50% { opacity: 1; transform: scale(1.1); }
-            100% { opacity: 0.7; transform: scale(1); }
+            100% { opacity: 0.6; transform: scale(1); }
         }
 
         /* 비주얼라이저 */
@@ -118,10 +127,9 @@
             border-radius: 1px;
             animation: bounce 0.8s ease-in-out infinite;
         }
-
-        .bar:nth-child(2) { animation-delay: 0.15s; }
-        .bar:nth-child(3) { animation-delay: 0.3s; }
-        .bar:nth-child(4) { animation-delay: 0.45s; }
+        .bar:nth-child(2) { animation-delay: 0.1s; }
+        .bar:nth-child(3) { animation-delay: 0.2s; }
+        .bar:nth-child(4) { animation-delay: 0.3s; }
 
         @keyframes bounce {
             0%, 100% { height: 5px; }
@@ -134,24 +142,22 @@
     <div id="widget-container">
         <div class="info-group">
             <div class="title-wrap" id="title-wrap">
-                <div id="title">Loading...</div>
+                <div id="title">System Loading...</div>
             </div>
-            <div id="singer">Waiting for Remote</div>
+            <div id="singer">Connecting to DB</div>
         </div>
         
         <div class="player-controls">
-            <svg class="icon" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+            <div class="control-btn"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></div>
             
-            <svg class="play-pause" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            <div id="main-icon-container">
+                </div>
             
-            <svg class="icon" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            <div class="control-btn"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></div>
         </div>
 
-        <div class="visualizer">
-            <div class="bar"></div>
-            <div class="bar"></div>
-            <div class="bar"></div>
-            <div class="bar"></div>
+        <div class="visualizer" id="visualizer">
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
         </div>
     </div>
 
@@ -174,6 +180,12 @@
         const titleEl = document.getElementById('title');
         const singerEl = document.getElementById('singer');
         const titleWrap = document.getElementById('title-wrap');
+        const iconContainer = document.getElementById('main-icon-container');
+        const visualizer = document.getElementById('visualizer');
+
+        // SVG 아이콘 정의
+        const playIcon = `<svg class="active-icon" viewBox="0 0 24 24" style="width:22px;"><path d="M8 5v14l11-7z"/></svg>`;
+        const pauseIcon = `<svg class="active-icon playing-pulse" viewBox="0 0 24 24" style="width:20px;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
 
         onValue(songRef, (snapshot) => {
             const data = snapshot.val();
@@ -183,15 +195,26 @@
             titleEl.style.animation = 'none';
             
             setTimeout(() => {
+                const isStandby = data.title === "Standby Mode" || data.singer === "QueenRyeRye";
+                
                 titleEl.innerText = data.title || "Untitled";
-                singerEl.innerText = data.singer || "Unknown Artist";
+                singerEl.innerText = data.singer || "Artist";
+
+                // 🛠️ 핵심 로직: 상태에 따른 아이콘 및 비주얼라이저 변경
+                if (isStandby) {
+                    iconContainer.innerHTML = playIcon; // 준비 모드 = 재생 버튼
+                    visualizer.style.display = 'none';   // 노래 안 나오니 막대 숨김
+                } else {
+                    iconContainer.innerHTML = pauseIcon; // 재생 중 = 일시정지 버튼
+                    visualizer.style.display = 'flex';   // 막대 움직임 시작
+                }
                 
                 widget.classList.add('show');
                 
+                // 마퀴 애니메이션 계산
                 setTimeout(() => {
                     const containerWidth = titleWrap.offsetWidth;
                     const textWidth = titleEl.scrollWidth;
-
                     if (textWidth > containerWidth + 5) {
                         const moveDist = containerWidth - textWidth;
                         titleEl.style.setProperty('--move-dist', `${moveDist}px`);
