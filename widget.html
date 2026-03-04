@@ -2,48 +2,103 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <title>QueenRyeRye Widget</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap');
-        
-        body { 
-            background: transparent; 
-            margin: 0; 
-            overflow: hidden; 
-            display: flex; 
-            align-items: center; 
-        }
-        
-        #widget-wrap {
-            display: flex;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.7); /* 검정 반투명 배경 */
-            padding: 10px 25px;
-            border-radius: 50px;
-            border-left: 8px solid #007bff;
-            color: white;
-            box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
-            animation: slideIn 0.5s ease-out;
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+
+        :root {
+            /* 리모컨과 통일된 컬러 팔레트 */
+            --point: #10b981;        /* 에메랄드 그린 */
+            --point-sub: #8b5cf6;    /* 뮤트 퍼플 */
+            --bg-glass: rgba(2, 6, 23, 0.7); /* 반투명 딥 네이비 */
+            --text-main: #f1f5f9;
+            --text-sub: #94a3b8;
         }
 
-        .icon { font-size: 24px; margin-right: 15px; }
-        
-        .content { font-family: 'Black Han Sans', sans-serif; }
-        #title { font-size: 28px; color: #ffeb3b; } /* 노란색 곡 제목 */
-        #singer { font-size: 20px; color: #ffffff; opacity: 0.9; margin-left: 10px; }
-
-        @keyframes slideIn {
-            from { transform: translateX(-100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+        body {
+            margin: 0; padding: 20px;
+            font-family: 'Pretendard', sans-serif;
+            overflow: hidden;
+            background-color: transparent; /* 크로마키/소스 추가용 투명 배경 */
         }
+
+        /* 위젯 전체 컨테이너 */
+        #widget-card {
+            display: flex; align-items: center;
+            width: fit-content; min-width: 400px; max-width: 600px;
+            height: 100px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(15px);
+            border-left: 6px solid var(--point);
+            border-radius: 4px 30px 30px 4px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            position: relative;
+            transform: translateX(-120%); /* 시작 시 화면 밖 */
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        #widget-card.show { transform: translateX(0); }
+
+        /* 좌측 'NOW PLAYING' 수직 텍스트 */
+        .side-label {
+            position: absolute; left: -30px; top: 50%;
+            transform: rotate(-90deg) translateY(-50%);
+            color: var(--point); font-size: 10px; font-weight: 900;
+            letter-spacing: 2px; text-transform: uppercase;
+            opacity: 0.6;
+        }
+
+        /* 텍스트 정보 영역 */
+        .info-area {
+            padding: 0 40px 0 25px;
+            display: flex; flex-direction: column; justify-content: center;
+            overflow: hidden;
+        }
+
+        /* 가수명 디자인 (음악방송 스타일) */
+        #singer {
+            font-size: 14px; font-weight: 800;
+            color: var(--point-sub); margin-bottom: 4px;
+            display: flex; align-items: center; gap: 8px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        #singer::before {
+            content: ''; display: inline-block;
+            width: 8px; height: 8px; background: var(--point); border-radius: 50%;
+            box-shadow: 0 0 10px var(--point);
+        }
+
+        /* 곡 제목 디자인 */
+        #title {
+            font-size: 28px; font-weight: 900;
+            color: var(--text-main);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            letter-spacing: -0.5px;
+        }
+
+        /* 곡 바뀔 때 반짝이는 효과 */
+        @keyframes shine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        .flash-effect {
+            position: absolute; top: 0; left: -100%;
+            width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.2), transparent);
+            transform: skewX(-25deg);
+        }
+        .active-flash { animation: shine 1.2s forwards; }
+
     </style>
 </head>
 <body>
 
-    <div id="widget-wrap">
-        <span class="icon">🎵</span>
-        <div class="content">
-            <span id="title">방송 대기 중</span>
-            <span id="singer">가수</span>
+    <div id="widget-card">
+        <div class="side-label">On Air</div>
+        <div class="flash-effect" id="flash"></div>
+        <div class="info-area">
+            <div id="singer">Loading...</div>
+            <div id="title">방송 대기 중</div>
         </div>
     </div>
 
@@ -51,6 +106,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+        // 파이어베이스 설정
         const firebaseConfig = {
             apiKey: "AIzaSyDD81eW0FEgovKUjM2RwE9S-XHhEz2V2gU",
             databaseURL: "https://queenryerye-d8dac-default-rtdb.firebaseio.com/",
@@ -60,20 +116,38 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const songRef = ref(db, 'currentSong');
 
-        onValue(ref(db, 'currentSong'), (snapshot) => {
+        const card = document.getElementById('widget-card');
+        const singerEl = document.getElementById('singer');
+        const titleEl = document.getElementById('title');
+        const flash = document.getElementById('flash');
+
+        let isFirstLoad = true;
+
+        onValue(songRef, (snapshot) => {
             const data = snapshot.val();
-            if (data) {
-                const wrap = document.getElementById('widget-wrap');
-                // 새로운 곡이 들어오면 애니메이션 다시 실행
-                wrap.style.animation = 'none';
-                void wrap.offsetWidth; 
-                wrap.style.animation = 'slideIn 0.5s ease-out';
+            if (!data) return;
 
-                document.getElementById('title').innerText = data.title;
-                document.getElementById('singer').innerText = data.singer;
-            }
+            // 데이터가 바뀌면 일단 카드를 숨겼다 다시 등장시킴
+            card.classList.remove('show');
+            
+            setTimeout(() => {
+                singerEl.innerText = data.singer || "ARTIST";
+                titleEl.innerText = data.title || "SONG TITLE";
+                
+                // 등장 애니메이션
+                card.classList.add('show');
+                
+                // 루비/에메랄드 섬광 효과
+                flash.classList.remove('active-flash');
+                void flash.offsetWidth; // 리플로우 트리거
+                flash.classList.add('active-flash');
+                
+                isFirstLoad = false;
+            }, 500);
         });
+
     </script>
 </body>
 </html>
