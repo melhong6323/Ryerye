@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>QueenRyeRye Widget</title>
+    <title>QueenRyeRye Player Widget</title>
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
 
@@ -21,7 +21,7 @@
             overflow: hidden;
         }
 
-        /* 깔끔한 85px 높이 */
+        /* 슬림 & 트렌디한 85px 높이 */
         #widget-container {
             width: 350px; height: 85px;
             background: var(--bg-glass);
@@ -30,7 +30,7 @@
             border-left: 5px solid var(--point);
             border-radius: 12px;
             display: flex; align-items: center;
-            padding: 0 20px;
+            padding: 0 15px 0 20px;
             position: relative;
             box-shadow: 0 10px 40px rgba(0,0,0,0.6);
             transform: translateX(-30px); opacity: 0;
@@ -39,7 +39,7 @@
 
         #widget-container.show { transform: translateX(0); opacity: 1; }
 
-        /* 텍스트 정보 영역 */
+        /* 곡 정보 영역 */
         .info-group {
             flex: 1;
             display: flex; flex-direction: column;
@@ -76,41 +76,44 @@
             letter-spacing: 0.3px;
         }
 
-        /* 🎵 추가된 재생바 (Progress Bar) */
-        .playback-area {
-            width: 60px; /* 적당한 가로폭 */
-            margin: 0 15px;
+        /* 🎵 플레이어 컨트롤 버튼 UI */
+        .player-controls {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 5px;
+            gap: 12px;
+            margin: 0 15px;
+            padding-left: 10px;
+            border-left: 1px solid rgba(255,255,255,0.1);
         }
 
-        .progress-rail {
-            width: 100%; height: 3px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 2px;
-            overflow: hidden;
-            position: relative;
+        .icon {
+            fill: var(--text-sub);
+            width: 14px; height: 14px;
+            opacity: 0.5;
         }
 
-        #progress-fill {
-            position: absolute; left: 0; top: 0;
-            width: 0%; height: 100%;
-            background: var(--point);
-            border-radius: 2px;
-            box-shadow: 0 0 8px var(--point);
-            transition: width 0.5s ease-out; /* 부드러운 차오름 */
+        .play-pause {
+            fill: var(--point);
+            width: 20px; height: 20px;
+            opacity: 1;
+            filter: drop-shadow(0 0 5px var(--point));
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.7; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+            100% { opacity: 0.7; transform: scale(1); }
         }
 
         /* 비주얼라이저 */
         .visualizer {
             display: flex; align-items: flex-end; gap: 3px;
-            height: 28px; flex-shrink: 0;
+            height: 25px; flex-shrink: 0;
         }
 
         .bar {
-            width: 4px; height: 6px;
+            width: 3px; height: 5px;
             background: linear-gradient(to top, var(--point-sub), var(--point));
             border-radius: 1px;
             animation: bounce 0.8s ease-in-out infinite;
@@ -119,11 +122,10 @@
         .bar:nth-child(2) { animation-delay: 0.15s; }
         .bar:nth-child(3) { animation-delay: 0.3s; }
         .bar:nth-child(4) { animation-delay: 0.45s; }
-        .bar:nth-child(5) { animation-delay: 0.1s; }
 
         @keyframes bounce {
-            0%, 100% { height: 6px; }
-            50% { height: 28px; }
+            0%, 100% { height: 5px; }
+            50% { height: 25px; }
         }
     </style>
 </head>
@@ -134,18 +136,18 @@
             <div class="title-wrap" id="title-wrap">
                 <div id="title">Loading...</div>
             </div>
-            <div id="singer">Connecting to Remote</div>
+            <div id="singer">Waiting for Remote</div>
         </div>
         
-        <div class="playback-area">
-            <div class="progress-rail">
-                <div id="progress-fill"></div>
-            </div>
-            <div style="font-size: 8px; color: var(--text-sub); font-weight: 900; letter-spacing: 1px;">PLAYING</div>
+        <div class="player-controls">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+            
+            <svg class="play-pause" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            
+            <svg class="icon" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
         </div>
 
         <div class="visualizer">
-            <div class="bar"></div>
             <div class="bar"></div>
             <div class="bar"></div>
             <div class="bar"></div>
@@ -172,19 +174,13 @@
         const titleEl = document.getElementById('title');
         const singerEl = document.getElementById('singer');
         const titleWrap = document.getElementById('title-wrap');
-        const progressFill = document.getElementById('progress-fill');
-
-        let progressInterval;
 
         onValue(songRef, (snapshot) => {
             const data = snapshot.val();
             if (!data) return;
 
-            // UI 초기화 및 숨기기
             widget.classList.remove('show');
             titleEl.style.animation = 'none';
-            progressFill.style.width = '0%';
-            clearInterval(progressInterval);
             
             setTimeout(() => {
                 titleEl.innerText = data.title || "Untitled";
@@ -192,15 +188,6 @@
                 
                 widget.classList.add('show');
                 
-                // 재생바 가상 진행 로직 (예: 3분 기준)
-                let percent = 0;
-                progressInterval = setInterval(() => {
-                    percent += 0.5;
-                    progressFill.style.width = percent + '%';
-                    if (percent >= 100) clearInterval(progressInterval);
-                }, 1000); // 1초마다 차오름
-
-                // 슬라이딩 타이틀 계산
                 setTimeout(() => {
                     const containerWidth = titleWrap.offsetWidth;
                     const textWidth = titleEl.scrollWidth;
