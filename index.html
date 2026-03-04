@@ -9,15 +9,15 @@
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
 
         :root {
-            /* 트렌디한 미드나잇 다크 & 루비 테마 */
-            --bg-deep: #0a0f1d;      /* 메인 배경 */
-            --bg-card: #161e2e;      /* 섹션 배경 */
-            --bg-inner: #1e293b;     /* 버튼/입력창 배경 */
-            --ruby: #9b111e;         /* 포인트 루비 레드 */
-            --ruby-bright: #e0115f;  /* 하이라이트 루비 */
+            /* 트렌디한 로즈 레드 & 미드나잇 그레이 */
+            --bg-deep: #0f111a;      /* 베이스 배경 */
+            --bg-card: #1a1d29;      /* 섹션 카드 배경 */
+            --bg-inner: #24283b;     /* 내부 버튼/입력창 배경 */
+            --point: #fb7185;        /* 연하고 트렌디한 로즈 레드 (Rose 400) */
+            --point-soft: #fda4af;   /* 더 연한 핑크 레드 */
             --text-main: #f8fafc;    /* 메인 텍스트 */
             --text-sub: #94a3b8;     /* 보조 텍스트 */
-            --border: #2d3748;       /* 은은한 경계선 */
+            --border: rgba(255, 255, 255, 0.08);
             --soop: #0046FF; --yt: #FF0000;
         }
 
@@ -28,99 +28,101 @@
             height: 100vh; overflow: hidden; display: flex; flex-direction: column;
         }
 
-        /* 헤더 */
+        /* 헤더 디자인 */
         .header {
             display: flex; align-items: center; justify-content: space-between;
-            height: 80px; padding: 0 40px; flex-shrink: 0;
-            background: linear-gradient(90deg, #0a0f1d 0%, #161e2e 100%);
-            border-bottom: 1px solid var(--border);
+            height: 70px; padding: 0 30px; flex-shrink: 0;
+            background: var(--bg-card); border-bottom: 1px solid var(--border);
         }
-        .header h1 { font-size: 24px; font-weight: 900; margin: 0; letter-spacing: 2px; }
-        .header h1 span { color: var(--ruby-bright); }
-        .links { display: flex; gap: 12px; }
-        .l-btn { padding: 9px 18px; border-radius: 10px; text-decoration: none; font-size: 12px; font-weight: 800; color: #fff; transition: 0.3s; }
+        .header h1 { font-size: 20px; font-weight: 800; margin: 0; letter-spacing: 1px; }
+        .header h1 span { color: var(--point); }
+        .links { display: flex; gap: 10px; }
+        .l-btn { padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 11px; font-weight: 800; color: #fff; transition: 0.3s; }
 
-        /* 레이아웃 */
+        /* 메인 레이아웃 */
         .container {
-            display: flex; gap: 20px; max-width: 1550px; margin: 0 auto;
-            padding: 20px; height: calc(100vh - 80px); width: 100%;
+            display: flex; gap: 20px; max-width: 1600px; margin: 0 auto;
+            padding: 20px; height: calc(100vh - 70px); width: 100%;
         }
 
         /* 좌측: 카테고리 & 공지 */
-        .left-pane { flex: 0 0 340px; display: flex; flex-direction: column; gap: 15px; }
+        .left-pane { flex: 0 0 320px; display: flex; flex-direction: column; gap: 15px; }
         
-        .category-box { background: var(--bg-card); border-radius: 20px; padding: 20px; border: 1px solid var(--border); }
-        .tab-group { display: flex; flex-wrap: wrap; gap: 8px; }
+        .pane-card { background: var(--bg-card); border-radius: 18px; padding: 20px; border: 1px solid var(--border); }
+        
+        .tab-group { display: flex; flex-wrap: wrap; gap: 6px; }
         .tab {
-            padding: 10px 15px; border-radius: 10px; background: var(--bg-inner);
-            color: var(--text-sub); cursor: pointer; font-size: 13px;
-            font-weight: 600; transition: 0.2s; border: none; outline: none;
+            padding: 9px 14px; border-radius: 10px; background: var(--bg-inner);
+            color: var(--text-sub); cursor: pointer; font-size: 12px;
+            font-weight: 600; transition: 0.2s; border: none;
         }
-        .tab.active { background: var(--ruby); color: white; border-color: var(--ruby-bright); box-shadow: 0 0 15px rgba(155, 17, 30, 0.4); }
+        .tab.active { background: var(--point); color: white; box-shadow: 0 4px 12px rgba(251, 113, 133, 0.3); }
 
-        /* 공지사항 UI (트렌디 리스트) */
+        /* 공지사항 UI 리팩토링 */
         .notice-box {
-            flex: 1; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-            border: 1px solid var(--border); border-left: 5px solid var(--ruby);
-            border-radius: 20px; padding: 25px; overflow-y: auto;
+            flex: 1; background: var(--bg-card); display: flex; flex-direction: column;
+            border-left: 4px solid var(--point); padding: 22px; overflow-y: auto;
         }
-        .notice-header { color: var(--ruby-bright); font-size: 11px; font-weight: 900; letter-spacing: 2px; margin-bottom: 25px; display: block; }
-        .notice-item { margin-bottom: 16px; display: flex; gap: 12px; font-size: 14px; line-height: 1.6; color: #e2e8f0; }
-        .notice-num { color: var(--ruby-bright); font-weight: 900; flex-shrink: 0; }
-        .notice-hl { color: #ff8ead; font-weight: 800; }
+        .notice-header { color: var(--point); font-size: 10px; font-weight: 900; letter-spacing: 2px; margin-bottom: 20px; text-transform: uppercase; }
+        .notice-list { list-style: none; padding: 0; margin: 0; }
+        .notice-item { 
+            display: flex; gap: 12px; margin-bottom: 16px; 
+            font-size: 13.5px; line-height: 1.5; color: #cbd5e1; 
+        }
+        .notice-num { color: var(--point); font-weight: 900; font-size: 14px; }
+        .notice-hl { color: var(--point-soft); font-weight: 700; border-bottom: 1px solid rgba(253, 164, 175, 0.3); }
 
-        /* 우측: 검색 & 목록 */
+        /* 우측: 검색 & 노래목록 */
         .right-pane {
-            flex: 1; background: var(--bg-card); border-radius: 25px;
+            flex: 1; background: var(--bg-card); border-radius: 20px;
             border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         }
 
         .list-header {
-            padding: 20px 30px; display: flex; gap: 15px; align-items: center;
-            background: rgba(30, 41, 59, 0.3); border-bottom: 1px solid var(--border);
+            padding: 15px 25px; display: flex; gap: 12px; align-items: center;
+            background: rgba(0,0,0,0.1); border-bottom: 1px solid var(--border);
         }
         #searchInput {
-            flex: 1; background: var(--bg-inner); border: 2px solid var(--border);
-            border-radius: 15px; padding: 15px 25px; font-size: 15px;
-            color: white; outline: none;
+            flex: 1; background: var(--bg-inner); border: 1px solid var(--border);
+            border-radius: 12px; padding: 12px 20px; font-size: 14px; color: white; outline: none;
         }
-        #searchInput:focus { border-color: var(--ruby-bright); box-shadow: 0 0 15px rgba(224, 17, 95, 0.2); }
+        #searchInput:focus { border-color: var(--point); }
         .reset-btn {
-            background: #0a0f1d; color: white; border: 1px solid var(--border);
-            padding: 0 20px; height: 50px; border-radius: 15px; font-size: 12px; font-weight: 800; cursor: pointer;
+            background: transparent; color: var(--text-sub); border: 1px solid var(--border);
+            padding: 0 16px; height: 42px; border-radius: 10px; font-size: 11px; font-weight: 700; cursor: pointer;
         }
+        .reset-btn:hover { border-color: var(--point); color: var(--point); }
 
-        #song-list { flex: 1; overflow-y: auto; padding: 15px 25px; }
+        /* 노래 목록 아이템 UI */
+        #song-list { flex: 1; overflow-y: auto; padding: 10px 15px; }
         .song-row {
-            display: grid; grid-template-columns: 100px 1.2fr 2fr 110px;
-            align-items: center; gap: 20px; padding: 18px 25px;
-            border-bottom: 1px solid rgba(255,255,255,0.05); transition: 0.2s;
+            display: grid; grid-template-columns: 90px 1.2fr 2fr 90px;
+            align-items: center; gap: 15px; padding: 12px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
         }
-        .song-row:hover { background: rgba(155, 17, 30, 0.1); border-radius: 15px; }
+        .song-row:hover { background: rgba(255, 255, 255, 0.02); border-radius: 12px; }
 
-        .s-singer { font-weight: 600; color: var(--text-sub); font-size: 14px; }
-        .s-title { font-weight: 800; color: var(--text-main); font-size: 16px; }
+        .s-singer { font-weight: 600; color: var(--text-sub); font-size: 13px; }
+        .s-title { font-weight: 700; color: var(--text-main); font-size: 14.5px; }
 
+        /* 버튼 디자인 */
         .btn-cp {
-            background: var(--bg-inner); border: 1px solid var(--border); height: 42px;
-            border-radius: 10px; cursor: pointer; color: var(--text-sub); font-size: 12px;
-            font-weight: 700; position: relative; display: flex; align-items: center; justify-content: center; gap: 5px;
+            background: var(--bg-inner); border: 1px solid var(--border); height: 36px;
+            border-radius: 8px; cursor: pointer; color: var(--text-sub); font-size: 11px;
+            font-weight: 700; position: relative; display: flex; align-items: center; justify-content: center; gap: 4px;
         }
         .btn-cp.copied::after {
-            content: "Copied!"; position: absolute; top: -35px; left: 50%; transform: translateX(-50%);
-            background: white; color: black; font-size: 10px; padding: 4px 10px; border-radius: 5px;
+            content: "Copied"; position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
+            background: var(--point); color: white; font-size: 10px; padding: 3px 8px; border-radius: 4px;
         }
 
         .btn-sd {
-            background: linear-gradient(135deg, var(--ruby) 0%, #5d0b13 100%);
-            color: white; border: none; height: 42px; border-radius: 10px;
-            font-weight: 900; font-size: 12px; cursor: pointer; letter-spacing: 1px;
-            text-transform: uppercase;
+            background: var(--point); color: white; border: none; height: 36px; border-radius: 8px;
+            font-weight: 800; font-size: 11px; cursor: pointer; letter-spacing: 0.5px;
         }
-        .btn-sd:hover { transform: translateY(-2px); box-shadow: 0 5px 15px var(--ruby); }
+        .btn-sd:hover { filter: brightness(1.1); }
 
-        #load-info { text-align: center; padding: 15px; font-size: 12px; color: var(--text-sub); font-weight: 700; }
+        #load-info { text-align: center; padding: 12px; font-size: 11px; color: var(--text-sub); border-top: 1px solid var(--border); }
     </style>
 </head>
 <body>
@@ -129,40 +131,40 @@
         <h1>QUEEN RYERYE <span>REMOTE</span></h1>
         <div class="links">
             <a href="https://www.sooplive.co.kr/station/eunyounglove" target="_blank" class="l-btn" style="background:var(--soop)">SOOP</a>
-            <a href="https://www.youtube.com/@queen_rye" target="_blank" class="l-btn" style="background:var(--yt)">YOUTUBE</a>
+            <a href="https://www.youtube.com/@queen_rye" target="_blank" class="l-btn" style="background:var(--yt)">YouTube</a>
         </div>
     </header>
 
     <div class="container">
         <div class="left-pane">
-            <div class="category-box">
-                <span style="font-size:10px; font-weight:900; color:var(--ruby-bright); display:block; margin-bottom:12px; letter-spacing:1px;">CATEGORIES</span>
+            <div class="pane-card">
+                <span style="font-size:9px; font-weight:900; color:var(--point); display:block; margin-bottom:10px; letter-spacing:1px;">CATEGORIES</span>
                 <div id="tabs" class="tab-group">
                     <button id="tab-전체" class="tab active" onclick="changeCat('전체')">전체</button>
                 </div>
             </div>
 
-            <div class="notice-box">
-                <span class="notice-header">📋 BROADCAST NOTICE</span>
-                <div class="notice-content">
-                    <div class="notice-item"><span class="notice-num">1.</span> 목 상태에 따라 순서가 나중으로 밀릴 수도 있습니다.</div>
-                    <div class="notice-item"><span class="notice-num">2.</span> 노래 중에는 채팅을 못 읽을 수 있으니 <span class="notice-hl">종료 후 채팅</span> 부탁드립니다.</div>
-                    <div class="notice-item"><span class="notice-num">3.</span> 응원봉을 열심히 흔들어주세요! (례례가 신나합니다)</div>
-                    <div class="notice-item"><span class="notice-num">4.</span> 영어가 많은 노래는 례례가 힘들어 합니다. <span class="notice-hl">노래책 확인 필수!</span></div>
-                    <div class="notice-item"><span class="notice-num">5.</span> 1곡 50개 / 미션 3곡 100개</div>
-                    <div class="notice-item"><span class="notice-num">6.</span> 연습곡 ❤️ <span class="notice-hl">한국곡 2000개, 외국곡 2500개</span> (디코 음원)</div>
-                    <div style="margin-top:20px; text-align:center; color:var(--ruby-bright); font-weight:900; font-size:13px;">※ 팬심 / 디코 휴방 공지 ※</div>
+            <div class="pane-card notice-box">
+                <span class="notice-header">Broadcast Guide</span>
+                <div class="notice-list">
+                    <div class="notice-item"><span class="notice-num">01</span><span>목 상태에 따라 순서가 나중으로 밀릴 수도 있습니다.</span></div>
+                    <div class="notice-item"><span class="notice-num">02</span><span>노래 중에는 채팅 확인이 어려우니 <span class="notice-hl">종료 후 대화</span> 부탁드려요.</span></div>
+                    <div class="notice-item"><span class="notice-num">03</span><span>응원봉을 흔들어주시면 례례가 신나서 노래합니다!</span></div>
+                    <div class="notice-item"><span class="notice-num">04</span><span>영어 비중이 높은 곡은 <span class="notice-hl">노래책 확인</span> 후 신청 부탁드립니다.</span></div>
+                    <div class="notice-item"><span class="notice-num">05</span><span>일반 신청 : 50개 / 미션 3곡 : 100개</span></div>
+                    <div class="notice-item"><span class="notice-num">06</span><span>연습곡 <span class="notice-hl">한국곡 2000 / 외국곡 2500</span> (디코 확인)</span></div>
                 </div>
+                <div style="margin-top:auto; padding-top:20px; border-top:1px solid var(--border); text-align:center; color:var(--point); font-weight:800; font-size:11px;">※ 휴방 공지는 팬심/디코 참조 ※</div>
             </div>
         </div>
 
         <div class="right-pane">
             <div class="list-header">
-                <input type="text" id="searchInput" placeholder="가수 또는 노래 제목 검색...">
+                <input type="text" id="searchInput" placeholder="Search by song title or artist...">
                 <button onclick="resetWidget()" class="reset-btn">WIDGET RESTART</button>
             </div>
             <div id="song-list"></div>
-            <div id="load-info">데이터 베이스 분석 중...</div>
+            <div id="load-info">Initializing Spreadsheet Connection...</div>
         </div>
     </div>
 
@@ -198,7 +200,6 @@
             const tabContainer = document.getElementById('tabs');
             allSongs = [];
 
-            // 탭 생성
             categories.forEach(cat => {
                 const btn = document.createElement('button');
                 btn.id = `tab-${cat.name}`; btn.className = 'tab';
@@ -206,7 +207,7 @@
                 tabContainer.appendChild(btn);
             });
 
-            // 🛠️ 완전 자동 탐색 로직 적용
+            // 완전 자동 행/열 탐색 로직
             for (const cat of categories) {
                 const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${cat.gid}`;
                 try {
@@ -216,11 +217,8 @@
                         Papa.parse(csv, {
                             complete: (results) => {
                                 let singerIdx = -1, titleIdx = -1, headerFound = false, lastSinger = "";
-                                
                                 for (let i = 0; i < results.data.length; i++) {
                                     const row = results.data[i];
-                                    
-                                    // 1. 헤더(가수, 제목) 위치를 찾을 때까지 행을 훑음
                                     if (!headerFound) {
                                         const rowStr = row.join(" ");
                                         if (rowStr.includes("가수") && rowStr.includes("제목")) {
@@ -230,23 +228,13 @@
                                             });
                                             if (singerIdx !== -1 && titleIdx !== -1) headerFound = true;
                                         }
-                                        continue; // 헤더를 찾기 전 줄들은 무시
+                                        continue;
                                     }
-
-                                    // 2. 헤더 발견 이후부터 데이터 수집
                                     const s = (row[singerIdx] || "").toString().trim();
                                     const t = (row[titleIdx] || "").toString().trim();
-
-                                    // 셀 병합 처리: 가수가 비어있으면 이전 가수를 유지
-                                    if (s !== "") lastSinger = s.replace(/"/g, '');
-                                    
-                                    // 제목이 있는 줄만 리스트에 추가 (헤더 중복 방지)
+                                    if (s !== "") lastSinger = s.replace(/"/g, ''); // 셀 병합 대응
                                     if (t && t !== "" && t !== "제목" && t !== "TITLE") {
-                                        allSongs.push({
-                                            cat: cat.name,
-                                            singer: lastSinger || "-",
-                                            title: t.replace(/"/g, '')
-                                        });
+                                        allSongs.push({ cat: cat.name, singer: lastSinger || "-", title: t.replace(/"/g, '') });
                                     }
                                 }
                                 resolve();
@@ -256,7 +244,7 @@
                 } catch (e) { console.error(`${cat.name} Load Error`); }
             }
             renderSongs();
-            statusEl.innerText = `✅ Database Synced: ${allSongs.length} Songs`;
+            statusEl.innerText = `DATABASE CONNECTED : ${allSongs.length} TRACKS`;
         }
 
         window.changeCat = (name) => {
@@ -281,7 +269,7 @@
                     <div class="s-title">${s.title}</div>
                     <button class="btn-sd" onclick="window.sendToWidget('${s.singer}', '${s.title}')">SEND</button>
                 </div>
-            `).join('') || '<div style="text-align:center; padding:100px; color:var(--text-sub);">결과 없음</div>';
+            `).join('') || '<div style="text-align:center; padding:100px; color:var(--text-sub);">No tracks found.</div>';
         }
 
         window.copyText = (txt, btn) => {
@@ -296,7 +284,7 @@
         };
 
         window.resetWidget = () => {
-            if(confirm("위젯을 초기화하시겠습니까?")) {
+            if(confirm("위젯 화면을 리셋하시겠습니까?")) {
                 set(ref(db, 'currentSong'), { singer: "QueenRyeRye", title: "Standby Mode", time: Date.now() });
             }
         };
